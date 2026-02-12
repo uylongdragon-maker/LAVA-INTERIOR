@@ -1,0 +1,169 @@
+
+import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getFirestore, collection, addDoc, deleteDoc, doc, getDoc, Timestamp, Firestore } from 'firebase/firestore';
+
+const firebaseConfig = {
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+};
+
+// Lazy initialization
+let app: FirebaseApp | null = null;
+let db: Firestore | null = null;
+
+const isConfigured = (): boolean => {
+    return !!(
+        firebaseConfig.apiKey &&
+        firebaseConfig.apiKey !== 'YOUR_FIREBASE_API_KEY' &&
+        firebaseConfig.projectId &&
+        firebaseConfig.projectId !== 'YOUR_FIREBASE_PROJECT_ID'
+    );
+};
+
+const initFirebase = () => {
+    if (app) return { db: db! };
+    if (!isConfigured()) {
+        console.warn('Firebase credentials not configured. Using localStorage fallback.');
+        return null;
+    }
+    try {
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        return { db };
+    } catch (error) {
+        console.error('Firebase initialization failed:', error);
+        return null;
+    }
+};
+
+export interface SavedDesign {
+    id: string;
+    imageUrl: string;
+    prompt: string;
+    palette: string;
+    createdAt: string;
+}
+
+// Convert base64 to blob
+const base64ToBlob = (base64: string): Blob => {
+    const parts = base64.split(';base64,');
+    const contentType = parts[0].split(':')[1];
+    const raw = window.atob(parts[1]);
+    const rawLength = raw.length;
+    const uInt8Array = new Uint8Array(rawLength);
+
+    for (let i = 0; i < rawLength; ++i) {
+        uInt8Array[i] = raw.charCodeAt(i);
+    }
+
+    return new Blob([uInt8Array], { type: contentType });
+};
+
+// Get designs from localStorage (fallback)
+export const getLocalDesigns = (): SavedDesign[] => {
+    try {
+        const stored = localStorage.getItem('lava_designs');
+        return stored ? JSON.parse(stored) : [];
+    } catch {
+        return [];
+    }
+};
+
+import { uploadToCloudinary } from './cloudinary';
+
+// ... (keep existing code)
+
+// Upload design to Cloudinary + save metadata to Firestore
+export const uploadDesign = async (
+    base64Image: string,
+    prompt: string,
+    palette: string
+): Promise<SavedDesign | null> => {
+    const firebase = initFirebase();
+
+    // Fallback to localStorage if Firebase not configured
+    if (!firebase) {
+        const design: SavedDesign = {
+            id: `local_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+            imageUrl: base64Image,
+            prompt,
+            palette,
+            createdAt: new Date().toISOString(),
+        };
+        const existingDesigns = getLocalDesigns();
+        existingDesigns.unshift(design);
+        localStorage.setItem('lava_designs', JSON.stringify(existingDesigns.slice(0, 20)));
+        return design;
+    }
+
+    try {
+        const blob = base64ToBlob(base64Image);
+
+        // Upload image to Cloudinary
+        const imageUrl = await uploadToCloudinary(blob);
+
+        // Save metadata to Firestore
+        const designData = {
+            imageUrl,
+            prompt,
+            palette,
+            storageProvider: 'cloudinary', // Mark as Cloudinary
+            createdAt: Timestamp.now(),
+        };
+
+        const docRef = await addDoc(collection(firebase.db, 'designs'), designData);
+
+        const design: SavedDesign = {
+            id: docRef.id,
+            imageUrl,
+            prompt,
+            palette,
+            createdAt: new Date().toISOString(),
+        };
+
+        // Also cache in localStorage
+        const existingDesigns = getLocalDesigns();
+        existingDesigns.unshift(design);
+        localStorage.setItem('lava_designs', JSON.stringify(existingDesigns.slice(0, 20)));
+
+        return design;
+    } catch (error) {
+        console.error('Failed to upload design:', error);
+        return null;
+    }
+};
+
+// Delete design from Firebase Storage + Firestore
+export const deleteDesign = async (id: string): Promise<boolean> => {
+    try {
+        const firebase = initFirebase();
+
+        // If local-only or Firebase not configured
+        if (!firebase || id.startsWith('local_')) {
+            const designs = getLocalDesigns().filter(d => d.id !== id);
+            localStorage.setItem('lava_designs', JSON.stringify(designs));
+            return true;
+        }
+
+        // Get design doc to find storage path
+        const docSnap = await getDoc(doc(firebase.db, 'designs', id));
+
+        if (docSnap.exists()) {
+            // Delete from Firestore
+            await deleteDoc(doc(firebase.db, 'designs', id));
+        }
+
+        // Remove from localStorage cache
+        const designs = getLocalDesigns().filter(d => d.id !== id);
+        localStorage.setItem('lava_designs', JSON.stringify(designs));
+
+        return true;
+    } catch (error) {
+        console.error('Failed to delete design:', error);
+        return false;
+    }
+};

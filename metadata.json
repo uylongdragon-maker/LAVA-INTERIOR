@@ -1,0 +1,7 @@
+{
+  "name": "Lava Interior - Luxury Furniture",
+  "description": "An elegant furniture platform featuring a creative AI workshop for custom designs, blending modern iOS 18 aesthetics with high-end luxury materials.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
