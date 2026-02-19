@@ -1,16 +1,13 @@
 
 import React from 'react';
+import ReactDOM from 'react-dom';
 import { Product, ProductStatus } from '../types';
 import parse from 'html-react-parser';
-import 'react-quill/dist/quill.snow.css'; // Verify if we need css here or global
 
 interface ProductDetailModalProps {
     product: Product | null;
     onClose: () => void;
 }
-
-import ReactDOM from 'react-dom';
-import parse from 'html-react-parser';
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClose }) => {
     if (!product) return null;
