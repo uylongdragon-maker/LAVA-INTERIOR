@@ -1,5 +1,8 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { initFirebase } from '../services/firebase';
+import { SiteConfig } from '../types';
 
 const VALUES = [
   {
@@ -46,6 +49,24 @@ const TEAM = [
 ];
 
 const About: React.FC = () => {
+  const [config, setConfig] = useState<SiteConfig | null>(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const firebase = initFirebase();
+      if (!firebase) return;
+      try {
+        const docSnap = await getDoc(doc(firebase.db, 'site_config', 'main'));
+        if (docSnap.exists()) {
+          setConfig(docSnap.data() as SiteConfig);
+        }
+      } catch (error) {
+        console.error("Error fetching about config", error);
+      }
+    };
+    fetchConfig();
+  }, []);
+
   return (
     <div className="page-enter">
       {/* Philosophy */}
@@ -54,17 +75,17 @@ const About: React.FC = () => {
           <div className="text-center space-y-6 reveal">
             <h2 className="text-xs font-bold tracking-[0.5em] uppercase text-accent-gold">Triết Lý Thiết Kế</h2>
             <h3 className="font-display text-5xl md:text-7xl font-light text-primary dark:text-[#6fbe8e] italic leading-tight">
-              "Cốt Cách <br />Từ Sự Thô Mộc"
+              {config?.aboutTitle || '"Cốt Cách \nTừ Sự Thô Mộc"'}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 font-light text-lg max-w-2xl mx-auto leading-relaxed">
-              Chúng tôi tin rằng vẻ đẹp thực sự nằm trong sự chân thực của vật liệu — nơi mà xi măng mài thô mộc trở thành nghệ thuật tinh tế.
+              {config?.aboutDescription || 'Chúng tôi tin rằng vẻ đẹp thực sự nằm trong sự chân thực của vật liệu — nơi mà xi măng mài thô mộc trở thành nghệ thuật tinh tế.'}
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center mt-20">
             <div className="reveal-left">
               <img
-                src="https://images.unsplash.com/photo-1574621100236-d25b64cfd647?q=80&w=1200"
+                src={config?.aboutImage || "https://images.unsplash.com/photo-1574621100236-d25b64cfd647?q=80&w=1200"}
                 alt="Lava Interior workshop"
                 className="rounded-2xl shadow-float w-full object-cover aspect-[4/5]"
               />
@@ -99,7 +120,7 @@ const About: React.FC = () => {
             <h3 className="font-display text-4xl md:text-5xl font-light text-primary dark:text-[#6fbe8e]">Những Gì Chúng Tôi Tin</h3>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {VALUES.map((value, idx) => (
+            {(config?.values || VALUES).map((value, idx) => (
               <div
                 key={idx}
                 className="reveal bg-white dark:bg-[#24332a] rounded-2xl p-8 shadow-soft hover-lift card-shine border border-transparent dark:border-white/5"
@@ -139,7 +160,7 @@ const About: React.FC = () => {
             {/* Vertical line */}
             <div className="absolute left-6 md:left-1/2 top-0 bottom-0 w-px bg-primary/15 dark:bg-primary/25 md:-translate-x-px"></div>
             <div className="space-y-12">
-              {MILESTONES.map((m, idx) => (
+              {(config?.milestones || MILESTONES).map((m, idx) => (
                 <div
                   key={idx}
                   className={`reveal relative flex items-start gap-6 md:gap-0 ${idx % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'
@@ -171,7 +192,7 @@ const About: React.FC = () => {
             <h3 className="font-display text-4xl md:text-5xl font-light text-primary dark:text-[#6fbe8e]">Những Người Tạo Ra Lava</h3>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {TEAM.map((member, idx) => (
+            {(config?.team || TEAM).map((member, idx) => (
               <div
                 key={idx}
                 className="reveal group text-center"

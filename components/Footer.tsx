@@ -1,9 +1,28 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { initFirebase } from '../services/firebase';
+import { SiteConfig } from '../types';
 
 const Footer: React.FC = () => {
+  const [config, setConfig] = useState<SiteConfig | null>(null);
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const firebase = initFirebase();
+      if (!firebase) return;
+      try {
+        const docSnap = await getDoc(doc(firebase.db, 'site_config', 'main'));
+        if (docSnap.exists()) {
+          setConfig(docSnap.data() as SiteConfig);
+        }
+      } catch (error) {
+        console.error("Error fetching footer config", error);
+      }
+    };
+    fetchConfig();
+  }, []);
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -15,31 +34,34 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="w-full bg-white dark:bg-surface-dark border-t border-[#e9f1ec] dark:border-[#2a4032] mt-16">
+    <footer className="w-full bg-[#1C1917] text-white pt-16 pb-10 px-6 mt-20 border-t border-white/5 relative overflow-hidden">
+      {/* Decorative gradient */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent-gold to-primary"></div>
+
       {/* Newsletter Bar */}
-      <div className="bg-gradient-to-r from-primary to-primary-dark py-10 md:py-14">
-        <div className="max-w-[1440px] mx-auto px-4 md:px-10 flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="max-w-7xl mx-auto mb-16 pb-12 border-b border-white/5 relative z-10">
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left">
-            <h3 className="text-xl md:text-2xl font-bold text-white mb-1">Nhận tin thiết kế mới nhất</h3>
-            <p className="text-white/70 text-sm font-light">Ưu đãi độc quyền & xu hướng nội thất 2026</p>
+            <h3 className="text-2xl md:text-3xl font-display font-medium text-white mb-2">Nhận tin thiết kế mới nhất</h3>
+            <p className="text-white/60 text-sm font-light font-body">Ưu đãi độc quyền & xu hướng nội thất 2026</p>
           </div>
           {subscribed ? (
-            <div className="flex items-center gap-2 text-white font-bold anim-scale-in">
+            <div className="flex items-center gap-2 text-primary font-bold anim-scale-in">
               <span className="material-symbols-outlined">check_circle</span>
               <span>Đăng ký thành công!</span>
             </div>
           ) : (
-            <form onSubmit={handleSubscribe} className="flex w-full md:w-auto gap-2">
+            <form onSubmit={handleSubscribe} className="flex w-full md:w-auto gap-3">
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Email của bạn..."
-                className="flex-1 md:w-72 px-5 py-3.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-white placeholder:text-white/50 outline-none focus:border-white/50 focus:bg-white/20 transition-all text-sm"
+                className="flex-1 md:w-80 px-6 py-4 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-white placeholder:text-white/40 outline-none focus:border-primary/50 focus:bg-white/10 transition-all text-sm font-light"
               />
               <button
                 type="submit"
-                className="px-6 py-3.5 bg-white text-primary font-bold rounded-xl text-sm hover:bg-accent-gold hover:text-white transition-all active:scale-95 shadow-lg flex items-center gap-2"
+                className="px-8 py-4 bg-primary text-white font-bold rounded-full text-sm hover:bg-primary-dark transition-all active:scale-95 shadow-lg shadow-primary/20 flex items-center gap-2 uppercase tracking-wider"
               >
                 <span className="material-symbols-outlined text-[18px]">send</span>
                 <span className="hidden sm:inline">Đăng ký</span>
@@ -49,70 +71,63 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Footer */}
-      <div className="max-w-[1440px] mx-auto px-4 md:px-10 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
-          {/* Brand */}
-          <div className="lg:col-span-2">
-            <a className="flex items-center gap-2 mb-6" href="#">
-              <div className="size-6 text-primary">
-                <svg className="w-full h-full" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M24 10L12 36H36L24 10Z" fill="currentColor"></path>
-                </svg>
-              </div>
-              <h2 className="text-xl font-bold tracking-tight text-[#101913] dark:text-white">Lava Interior</h2>
-            </a>
-            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-sm leading-relaxed">
-              Định nghĩa lại phong cách sống hiện đại qua tay nghề thủ công bền vững và thiết kế uyển chuyển. Nâng tầm tổ ấm của bạn.
-            </p>
-            <div className="flex gap-4">
-              <a href="#" className="size-10 rounded-xl bg-[#f6f8f7] dark:bg-white/5 flex items-center justify-center text-[#578e6b] hover:bg-primary hover:text-white transition-all">
-                <span className="material-symbols-outlined text-[20px]">thumb_up</span>
-              </a>
-              <a href="#" className="size-10 rounded-xl bg-[#f6f8f7] dark:bg-white/5 flex items-center justify-center text-[#578e6b] hover:bg-primary hover:text-white transition-all">
-                <span className="material-symbols-outlined text-[20px]">favorite</span>
-              </a>
-              <a href="#" className="size-10 rounded-xl bg-[#f6f8f7] dark:bg-white/5 flex items-center justify-center text-[#578e6b] hover:bg-primary hover:text-white transition-all">
-                <span className="material-symbols-outlined text-[20px]">share</span>
-              </a>
-            </div>
-          </div>
-          {/* Links */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 border-b border-white/5 pb-12 relative z-10">
+        <div className="col-span-1 md:col-span-2 space-y-8">
           <div>
-            <h4 className="font-bold text-[#101913] dark:text-white mb-6">Mua sắm</h4>
-            <ul className="space-y-4">
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Hàng mới về</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Bán chạy nhất</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Nội thất</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Creative Lab</a></li>
-            </ul>
+            <h2 className="text-4xl font-display font-medium text-white tracking-tight">Lava Interior</h2>
+            <span className="text-xs text-accent-gold uppercase tracking-[0.3em] font-bold">Luxury Furniture</span>
           </div>
-          <div>
-            <h4 className="font-bold text-[#101913] dark:text-white mb-6">Công ty</h4>
-            <ul className="space-y-4">
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Câu chuyện của Lava</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Bền vững</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Tuyển dụng</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Blog</a></li>
-            </ul>
-          </div>
-          <div>
-            <h4 className="font-bold text-[#101913] dark:text-white mb-6">Hỗ trợ</h4>
-            <ul className="space-y-4">
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Liên hệ</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">FAQ</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Chính sách trả hàng</a></li>
-              <li><a className="text-gray-500 hover:text-primary transition-colors text-sm" href="#">Bảo hành</a></li>
-            </ul>
+          <p className="text-gray-400 max-w-md leading-relaxed font-light text-base">
+            {config?.footerDescription || 'Chuyên cung cấp các sản phẩm nội thất bàn ghế, chậu cây xi măng, composite cao cấp. Mang thiên nhiên và sự tinh tế vào không gian sống của bạn.'}
+          </p>
+          <div className="flex gap-4">
+            {config?.socialFacebook && (
+              <a href={config.socialFacebook} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all duration-300">
+                <span className="material-symbols-outlined text-xl">public</span>
+              </a>
+            )}
+            {config?.socialInstagram && (
+              <a href={config.socialInstagram} target="_blank" rel="noreferrer" className="w-12 h-12 rounded-full border border-white/10 flex items-center justify-center hover:bg-primary hover:border-primary hover:text-white transition-all duration-300">
+                <span className="material-symbols-outlined text-xl">photo_camera</span>
+              </a>
+            )}
           </div>
         </div>
-        <div className="pt-8 border-t border-[#e9f1ec] dark:border-[#2a4032] flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-sm text-gray-400">© 2026 Lava Interior. All rights reserved.</p>
-          <div className="flex gap-6">
-            <span className="text-sm text-gray-400 cursor-pointer hover:text-primary transition-colors">Điều khoản</span>
-            <span className="text-sm text-gray-400 cursor-pointer hover:text-primary transition-colors">Bảo mật</span>
-            <span className="text-sm text-gray-400 cursor-pointer hover:text-primary transition-colors">Cookies</span>
-          </div>
+
+        <div className="space-y-8">
+          <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-accent-gold">Liên Hệ</h4>
+          <ul className="space-y-6 text-gray-400 text-sm font-light">
+            <li className="flex items-start gap-4">
+              <span className="material-symbols-outlined text-primary mt-1">location_on</span>
+              <span className="leading-relaxed">{config?.address || '123 Đường ABC, Quận XYZ, TP.HCM'}</span>
+            </li>
+            <li className="flex items-center gap-4">
+              <span className="material-symbols-outlined text-primary">phone</span>
+              <span className="hover:text-white transition-colors cursor-pointer">{config?.contactPhone || '0909 123 456'}</span>
+            </li>
+            <li className="flex items-center gap-4">
+              <span className="material-symbols-outlined text-primary">mail</span>
+              <span className="hover:text-white transition-colors cursor-pointer">{config?.contactEmail || 'contact@lava-interior.com'}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div className="space-y-8">
+          <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-accent-gold">Hỗ trợ</h4>
+          <ul className="space-y-4 text-gray-400 text-sm font-light">
+            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gray-600 rounded-full"></span> Điều khoản & Chính sách</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gray-600 rounded-full"></span> Vận chuyển & Giao nhận</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gray-600 rounded-full"></span> Đổi trả hàng</a></li>
+            <li><a href="#" className="hover:text-primary transition-colors flex items-center gap-2"><span className="w-1 h-1 bg-gray-600 rounded-full"></span> Câu hỏi thường gặp</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-gray-600 font-light relative z-10">
+        <p>© 2026 Lava Interior. All rights reserved.</p>
+        <div className="flex gap-8">
+          <span className="cursor-pointer hover:text-primary transition-colors">Privacy Policy</span>
+          <span className="cursor-pointer hover:text-primary transition-colors">Terms of Service</span>
         </div>
       </div>
     </footer>

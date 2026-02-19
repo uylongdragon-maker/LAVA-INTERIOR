@@ -30,7 +30,7 @@ const Contact: React.FC = () => {
       {/* Page Header */}
       <div className="mb-12 md:mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
         <div className="max-w-2xl">
-          <h1 className="text-4xl font-extrabold tracking-tight text-[#101913] dark:text-white sm:text-5xl lg:text-6xl mb-4">
+          <h1 className="text-4xl font-extrabold tracking-tight text-text-main dark:text-white sm:text-5xl lg:text-6xl mb-4">
             Liên hệ với Lava
           </h1>
           <p className="text-lg text-[#578e6b] dark:text-gray-400 font-medium">
@@ -47,20 +47,20 @@ const Contact: React.FC = () => {
         {/* Left Column: Form */}
         <div className="lg:col-span-7 flex flex-col gap-10">
           <div className="reveal bg-white dark:bg-[#1A261F] p-6 md:p-10 rounded-2xl shadow-float border border-transparent dark:border-white/5">
-            <h3 className="text-2xl font-bold mb-8 text-[#101913] dark:text-white">Bắt đầu dự án</h3>
+            <h3 className="text-2xl font-bold mb-8 text-text-main dark:text-white">Bắt đầu dự án</h3>
             {submitted ? (
               <div className="flex flex-col items-center justify-center text-center py-12 anim-scale-in">
                 <div className="size-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
                   <span className="material-symbols-outlined text-primary text-3xl">check_circle</span>
                 </div>
-                <h4 className="text-xl font-bold text-[#101913] dark:text-white mb-2">Đã gửi thành công!</h4>
+                <h4 className="text-xl font-bold text-text-main dark:text-white mb-2">Đã gửi thành công!</h4>
                 <p className="text-gray-500 dark:text-gray-400 text-sm">Đội ngũ Lava sẽ liên hệ lại trong 24 giờ.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row gap-6">
                   <label className="flex flex-col flex-1 gap-2">
-                    <span className="text-sm font-semibold text-[#101913] dark:text-gray-300">Họ và tên lót</span>
+                    <span className="text-sm font-semibold text-text-main dark:text-gray-300">Họ và tên lót</span>
                     <input className="w-full rounded-xl border border-[#d3e4d9] bg-[#f9fbfa] px-4 py-3.5 text-base outline-none transition-all focus:border-primary focus:ring-1 focus:ring-primary dark:bg-white/5 dark:border-white/10 dark:text-white" placeholder="Nguyễn Văn" type="text" />
                   </label>
                   <label className="flex flex-col flex-1 gap-2">
@@ -108,7 +108,7 @@ const Contact: React.FC = () => {
                 </div>
                 <div className="flex-1 p-5">
                   <span className="inline-flex items-center rounded-md bg-[#f9fbfa] dark:bg-white/10 px-2 py-1 text-xs font-bold uppercase text-primary border border-primary/10 mb-2">{showroom.label}</span>
-                  <h4 className="text-lg font-bold text-[#101913] dark:text-white">{showroom.city}</h4>
+                  <h4 className="text-lg font-bold text-text-main dark:text-white">{showroom.city}</h4>
                   <p className="text-sm text-[#578e6b] dark:text-gray-400 mt-1">{showroom.address}</p>
                 </div>
               </div>
@@ -117,7 +117,7 @@ const Contact: React.FC = () => {
 
           {/* Direct Contact */}
           <div className="reveal bg-gradient-to-br from-primary/5 to-accent-gold/5 dark:from-primary/10 dark:to-accent-gold/10 rounded-xl p-6 border border-primary/10 dark:border-primary/20 space-y-4 mt-2">
-            <h4 className="font-bold text-[#101913] dark:text-white">Liên hệ trực tiếp</h4>
+            <h4 className="font-bold text-text-main dark:text-white">Liên hệ trực tiếp</h4>
             <div className="space-y-3">
               <a href="tel:+841234567890" className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-[18px] text-primary">call</span>

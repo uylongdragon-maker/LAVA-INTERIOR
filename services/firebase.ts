@@ -24,8 +24,8 @@ const isConfigured = (): boolean => {
     );
 };
 
-const initFirebase = () => {
-    if (app) return { db: db! };
+export const initFirebase = () => {
+    if (app) return { db: db!, app };
     if (!isConfigured()) {
         console.warn('Firebase credentials not configured. Using localStorage fallback.');
         return null;
@@ -33,7 +33,7 @@ const initFirebase = () => {
     try {
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        return { db };
+        return { db, app };
     } catch (error) {
         console.error('Firebase initialization failed:', error);
         return null;

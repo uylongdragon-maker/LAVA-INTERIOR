@@ -16,7 +16,9 @@
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect" />
   <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
+    rel="stylesheet" />
   <!-- Material Symbols -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
     rel="stylesheet" />
@@ -28,18 +30,22 @@
       theme: {
         extend: {
           colors: {
-            "primary": "#1c6d3a",
-            "primary-dark": "#14522d",
-            "accent-wine": "#7A1F2B",
-            "accent-gold": "#D4AF37",
-            "background-light": "#f6f8f7",
-            "background-dark": "#131f17",
+            "primary": "#FF6500", /* Orange */
+            "primary-dark": "#CC5200",
+            "accent-green": "#25671E", /* Green */
+            "accent-wine": "#78350F",
+            "accent-gold": "#CA8A04",
+            "background-light": "#FCF8F8", /* Off-white */
+            "background-dark": "#1A1C1A",
             "surface-light": "#ffffff",
-            "surface-dark": "#1c2a21",
+            "surface-dark": "#2C332D",
+            "text-main": "#213C51", /* Dark Blue */
+            "text-gray": "#57534E",
           },
           fontFamily: {
-            "display": ["Manrope", "sans-serif"],
-            "body": ["Manrope", "sans-serif"]
+            "display": ["Playfair Display", "serif"],
+            "body": ["Playfair Display", "serif"],
+            "sans": ["Playfair Display", "serif"]
           },
           borderRadius: {
             "DEFAULT": "0.5rem",
@@ -49,11 +55,11 @@
             "full": "9999px"
           },
           boxShadow: {
-            "soft": "0 4px 20px -2px rgba(0, 0, 0, 0.05)",
-            "float": "0 10px 40px -10px rgba(0, 0, 0, 0.08)",
+            "soft": "0 4px 20px -2px rgba(220, 38, 38, 0.1)",
+            "float": "0 10px 40px -10px rgba(220, 38, 38, 0.15)",
           },
           backgroundImage: {
-            'luxury-gradient': 'linear-gradient(135deg, #7A1F2B 0%, #D4AF37 100%)',
+            'luxury-gradient': 'linear-gradient(135deg, #DC2626 0%, #CA8A04 100%)',
           }
         },
       },
@@ -61,7 +67,17 @@
   </script>
   <style>
     body {
-      font-family: 'Manrope', sans-serif;
+      font-family: 'Playfair Display', serif;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
     }
 
     .bg-dot-grid {
@@ -116,7 +132,7 @@
 </head>
 
 <body
-  class="bg-background-light dark:bg-background-dark text-[#101913] dark:text-[#f0f4f2] antialiased transition-colors duration-300">
+  class="bg-background-light dark:bg-background-dark text-text-main dark:text-[#f0f4f2] antialiased transition-colors duration-300">
   <div id="root"></div>
   <script type="module" src="/index.tsx"></script>
 </body>
