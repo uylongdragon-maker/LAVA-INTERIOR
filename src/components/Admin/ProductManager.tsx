@@ -4,8 +4,8 @@ import { initFirebase } from '../../../services/firebase';
 import { uploadToCloudinary } from '../../../services/cloudinary';
 import { Product, Category, Material, ProductStatus } from '../../../types';
 import ImageCropper from './ImageCropper';
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 interface ProductManagerProps { }
 
