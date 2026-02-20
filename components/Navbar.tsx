@@ -28,7 +28,16 @@ const Navbar: React.FC = () => {
       try {
         const docSnap = await getDoc(doc(firebase.db, 'site_config', 'main'));
         if (docSnap.exists()) {
-          setConfig(docSnap.data() as SiteConfig);
+          const data = docSnap.data() as SiteConfig;
+          setConfig(data);
+          // Dynamically update favicon from logo
+          if (data.logo) {
+            const favicon = document.getElementById('dynamic-favicon') as HTMLLinkElement;
+            if (favicon) {
+              favicon.type = 'image/png';
+              favicon.href = data.logo;
+            }
+          }
         }
       } catch (error) {
         console.error("Error fetching navbar config", error);
