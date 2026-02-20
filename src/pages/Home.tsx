@@ -83,17 +83,25 @@ const LegacySection: React.FC<{ intro?: HomeIntro, stats: HomeStat[] }> = ({ int
     ];
     const displayStats = stats.length > 0 ? stats : defaultStats;
 
+    const defaultImages = [
+        'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600',
+        'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=600',
+        'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=600',
+        'https://images.unsplash.com/photo-1505691938895-1758d7eaa511?q=80&w=600',
+    ];
+    const images = (intro?.images && intro.images.length >= 4) ? intro.images : defaultImages;
+
     return (
         <section className="py-32 bg-background-light dark:bg-[#1a261f]">
             <div className="container mx-auto px-6 lg:px-12 grid lg:grid-cols-2 gap-20 items-center">
                 <div className="relative grid grid-cols-2 gap-6 reveal-left">
                     <div className="space-y-6">
-                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=600" className="rounded-2xl shadow-float hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Workshop" />
-                        <img src="https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?q=80&w=600" className="rounded-2xl shadow-soft translate-x-8 hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Interior" />
+                        <img src={images[0]} className="rounded-2xl shadow-float hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Workshop" />
+                        <img src={images[1]} className="rounded-2xl shadow-soft translate-x-8 hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Interior" />
                     </div>
                     <div className="pt-16 space-y-6">
-                        <img src="https://images.unsplash.com/photo-1519710164239-da123dc03ef4?q=80&w=600" className="rounded-2xl shadow-soft -translate-x-8 hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Design" />
-                        <img src="https://images.unsplash.com/photo-1505691938895-1758d7eaa511?q=80&w=600" className="rounded-2xl shadow-float hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Furniture" />
+                        <img src={images[2]} className="rounded-2xl shadow-soft -translate-x-8 hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Design" />
+                        <img src={images[3]} className="rounded-2xl shadow-float hover-lift grayscale hover:grayscale-0 transition-all duration-700" alt="Furniture" />
                     </div>
                     <div className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-accent-gold/20 blur-[120px] rounded-full" />
                 </div>

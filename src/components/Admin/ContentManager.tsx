@@ -178,6 +178,46 @@ const ContentManager: React.FC = () => {
                                 />
                             </div>
                         </div>
+
+                        {/* Gallery Images for Legacy Section */}
+                        <div className="border-t border-gray-100 dark:border-[#2a4032] pt-6 mt-6">
+                            <h3 className="font-bold dark:text-white mb-1">Gallery Images (Legacy Section)</h3>
+                            <p className="text-xs text-gray-400 mb-4">4 hình ảnh hiển thị ở phần "Kế Thừa & Đổi Mới" trang chủ</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                {[0, 1, 2, 3].map(idx => (
+                                    <div key={idx} className="space-y-2">
+                                        <label className="block text-xs font-medium dark:text-gray-400">Image {idx + 1}</label>
+                                        <div className="relative aspect-[4/5] bg-gray-50 dark:bg-black/20 rounded-xl border-2 border-dashed border-gray-200 dark:border-white/10 overflow-hidden group cursor-pointer"
+                                            onClick={() => document.getElementById(`gallery-img-${idx}`)?.click()}>
+                                            {config.homeIntro?.images?.[idx] ? (
+                                                <img src={config.homeIntro.images[idx]} className="w-full h-full object-cover" alt={`Gallery ${idx + 1}`} />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                                    <span className="material-symbols-outlined">add_photo_alternate</span>
+                                                </div>
+                                            )}
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <span className="text-white text-xs font-bold">Change</span>
+                                            </div>
+                                            <input
+                                                id={`gallery-img-${idx}`}
+                                                type="file"
+                                                className="hidden"
+                                                onChange={async (e) => {
+                                                    if (e.target.files && e.target.files[0]) {
+                                                        const url = await uploadToCloudinary(e.target.files[0]);
+                                                        const newImages = [...(config.homeIntro?.images || ['', '', '', ''])];
+                                                        while (newImages.length < 4) newImages.push('');
+                                                        newImages[idx] = url;
+                                                        setConfig(prev => ({ ...prev, homeIntro: { ...prev.homeIntro, images: newImages } }));
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 )}
 
