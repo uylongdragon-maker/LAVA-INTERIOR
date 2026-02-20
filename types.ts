@@ -80,6 +80,10 @@ export interface SiteConfig {
   homeCollections: HomeCollectionItem[];
   homeStats: HomeStat[];
   homeIntro: HomeIntro;
+
+  // Contact Page
+  showrooms: Showroom[];
+  contactPage: ContactPageConfig;
 }
 
 export interface CoreValue {
@@ -117,6 +121,19 @@ export interface HomeIntro {
   subtitle: string;
   desc: string;
   images: string[];
+}
+
+export interface Showroom {
+  city: string;
+  address: string;
+  label: string;
+  img: string;
+}
+
+export interface ContactPageConfig {
+  pageTitle: string;
+  pageSubtitle: string;
+  workingHours: string;
 }
 
 export enum OrderStatus {

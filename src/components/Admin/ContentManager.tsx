@@ -2,13 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
-import { SiteConfig } from '../../../types';
+import { SiteConfig, Showroom } from '../../../types';
 import { useAdminLang } from '../../contexts/AdminLanguageContext';
 import { uploadToCloudinary } from '../../../services/cloudinary';
 
 const ContentManager: React.FC = () => {
     const { t } = useAdminLang();
-    const [activeSection, setActiveSection] = useState<'general' | 'home' | 'about' | 'footer' | 'titles'>('general');
+    const [activeSection, setActiveSection] = useState<'general' | 'home' | 'about' | 'footer' | 'contact' | 'titles'>('general');
     const [config, setConfig] = useState<SiteConfig>({
         heroTitle: '',
         heroSubtitle: '',
@@ -31,7 +31,9 @@ const ContentManager: React.FC = () => {
         team: [],
         homeCollections: [],
         homeStats: [],
-        homeIntro: { title: '', subtitle: '', desc: '', images: [] }
+        homeIntro: { title: '', subtitle: '', desc: '', images: [] },
+        showrooms: [],
+        contactPage: { pageTitle: '', pageSubtitle: '', workingHours: '' }
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -110,6 +112,7 @@ const ContentManager: React.FC = () => {
         { id: 'general', label: 'General & Hero' },
         { id: 'about', label: 'About Page' },
         { id: 'footer', label: 'Contact & Footer' },
+        { id: 'contact', label: 'Contact Page' },
         { id: 'titles', label: 'Section Titles' },
     ];
 
@@ -461,6 +464,132 @@ const ContentManager: React.FC = () => {
                                     type="text" name="socialInstagram" value={config.socialInstagram} onChange={handleChange}
                                     className="w-full p-2 rounded border dark:bg-black/20 dark:border-white/10 dark:text-white"
                                 />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* CONTACT PAGE */}
+                {activeSection === 'contact' && (
+                    <div className="space-y-8 animate-fade-in">
+                        {/* Page Header */}
+                        <div>
+                            <h3 className="font-bold dark:text-white mb-4">Page Header</h3>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium mb-1 dark:text-gray-400">Page Title</label>
+                                    <input
+                                        type="text"
+                                        value={config.contactPage?.pageTitle || ''}
+                                        onChange={e => setConfig(prev => ({ ...prev, contactPage: { ...prev.contactPage, pageTitle: e.target.value } }))}
+                                        placeholder="Liên hệ với Lava"
+                                        className="w-full p-2 rounded border text-sm dark:bg-black/20 dark:border-white/10 dark:text-white"
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-medium mb-1 dark:text-gray-400">Page Subtitle</label>
+                                    <textarea
+                                        value={config.contactPage?.pageSubtitle || ''}
+                                        onChange={e => setConfig(prev => ({ ...prev, contactPage: { ...prev.contactPage, pageSubtitle: e.target.value } }))}
+                                        placeholder="Ghé thăm showroom của chúng tôi..."
+                                        rows={2}
+                                        className="w-full p-2 rounded border text-sm dark:bg-black/20 dark:border-white/10 dark:text-white"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-medium mb-1 dark:text-gray-400">Working Hours</label>
+                                    <input
+                                        type="text"
+                                        value={config.contactPage?.workingHours || ''}
+                                        onChange={e => setConfig(prev => ({ ...prev, contactPage: { ...prev.contactPage, workingHours: e.target.value } }))}
+                                        placeholder="T2 – T7: 9:00 – 18:00"
+                                        className="w-full p-2 rounded border text-sm dark:bg-black/20 dark:border-white/10 dark:text-white"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Showrooms */}
+                        <div className="border-t border-gray-100 dark:border-[#2a4032] pt-8">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="font-bold dark:text-white">Showrooms</h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setConfig(prev => ({ ...prev, showrooms: [...(prev.showrooms || []), { city: 'Thành phố', address: 'Địa chỉ', label: 'Showroom', img: '' }] }))}
+                                    className="text-sm text-primary hover:underline"
+                                >
+                                    + Add Showroom
+                                </button>
+                            </div>
+                            <div className="space-y-4">
+                                {config.showrooms?.map((sr, idx) => (
+                                    <div key={idx} className="p-4 border border-gray-100 dark:border-white/5 rounded-xl bg-gray-50/50 dark:bg-white/5 relative group">
+                                        <button
+                                            type="button"
+                                            onClick={() => setConfig(prev => ({ ...prev, showrooms: prev.showrooms.filter((_, i) => i !== idx) }))}
+                                            className="absolute top-2 right-2 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-opacity"
+                                        >
+                                            <span className="material-symbols-outlined text-lg">delete</span>
+                                        </button>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-medium mb-1 dark:text-gray-400">Label (e.g. Flagship)</label>
+                                                <input
+                                                    type="text"
+                                                    value={sr.label}
+                                                    onChange={e => {
+                                                        const items = [...(config.showrooms || [])];
+                                                        items[idx] = { ...items[idx], label: e.target.value };
+                                                        setConfig(prev => ({ ...prev, showrooms: items }));
+                                                    }}
+                                                    className="w-full p-2 rounded border text-sm dark:bg-black/20 dark:border-white/10 dark:text-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium mb-1 dark:text-gray-400">City</label>
+                                                <input
+                                                    type="text"
+                                                    value={sr.city}
+                                                    onChange={e => {
+                                                        const items = [...(config.showrooms || [])];
+                                                        items[idx] = { ...items[idx], city: e.target.value };
+                                                        setConfig(prev => ({ ...prev, showrooms: items }));
+                                                    }}
+                                                    className="w-full p-2 rounded border text-sm dark:bg-black/20 dark:border-white/10 dark:text-white"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-xs font-medium mb-1 dark:text-gray-400">Address</label>
+                                                <input
+                                                    type="text"
+                                                    value={sr.address}
+                                                    onChange={e => {
+                                                        const items = [...(config.showrooms || [])];
+                                                        items[idx] = { ...items[idx], address: e.target.value };
+                                                        setConfig(prev => ({ ...prev, showrooms: items }));
+                                                    }}
+                                                    className="w-full p-2 rounded border text-sm dark:bg-black/20 dark:border-white/10 dark:text-white"
+                                                />
+                                            </div>
+                                            <div className="md:col-span-3">
+                                                <label className="block text-xs font-medium mb-1 dark:text-gray-400">Showroom Image</label>
+                                                <input
+                                                    type="file"
+                                                    onChange={async (e) => {
+                                                        if (e.target.files && e.target.files[0]) {
+                                                            const url = await uploadToCloudinary(e.target.files[0]);
+                                                            const items = [...(config.showrooms || [])];
+                                                            items[idx] = { ...items[idx], img: url };
+                                                            setConfig(prev => ({ ...prev, showrooms: items }));
+                                                        }
+                                                    }}
+                                                    className="w-full text-xs dark:text-gray-400 mb-2"
+                                                />
+                                                {sr.img && <img src={sr.img} alt={sr.city} className="h-20 rounded-lg object-cover" />}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>

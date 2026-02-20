@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, doc, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { uploadToCloudinary } from '../../../services/cloudinary';
 import { Product, Category, Material, ProductStatus } from '../../../types';
@@ -27,6 +27,8 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
     const [showCropper, setShowCropper] = useState(false);
     const [tempImgSrc, setTempImgSrc] = useState<string | null>(null);
     const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [existingImageUrl, setExistingImageUrl] = useState<string>('');
 
     const firebase = initFirebase();
 
@@ -102,27 +104,46 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
         if (!croppedBlob) setImageFile(null); // Reset if no crop was saved
     };
 
+    const handleEdit = (product: Product) => {
+        setEditingId(product.id);
+        setName(product.name);
+        setPrice(String(product.price));
+        setCategory(product.category);
+        setMaterial(product.material);
+        setDescription(product.description);
+        setStock(String(product.stock));
+        setSku(product.sku);
+        setStatus(product.status);
+        setExistingImageUrl(product.imageUrl);
+        setImageFile(null);
+        setCroppedBlob(null);
+        setTempImgSrc(null);
+        // Scroll to form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!firebase || (!imageFile && !croppedBlob)) {
+        const isEditing = !!editingId;
+        if (!firebase || (!isEditing && !imageFile && !croppedBlob)) {
             alert("Please select an image and ensure Firebase is connected.");
             return;
         }
         setUploading(true);
 
         try {
-            // 1. Upload Image
-            let imageUrl = '';
+            // 1. Upload Image (only if new image selected)
+            let imageUrl = existingImageUrl;
             if (croppedBlob) {
                 imageUrl = await uploadToCloudinary(croppedBlob);
             } else if (imageFile) {
                 imageUrl = await uploadToCloudinary(imageFile);
-            } else {
+            } else if (!isEditing) {
                 throw new Error("No image to upload");
             }
 
-            // 2. Add to Firestore
-            const newProduct = {
+            // 2. Build product data
+            const productData = {
                 name,
                 price: Number(price),
                 category,
@@ -132,25 +153,36 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                 sku,
                 status,
                 imageUrl,
-                createdAt: Timestamp.now(),
             };
 
-            await addDoc(collection(firebase.db, 'products'), newProduct);
+            if (isEditing) {
+                // Update existing product
+                await updateDoc(doc(firebase.db, 'products', editingId), productData);
+                alert("Product updated successfully!");
+            } else {
+                // Add new product
+                await addDoc(collection(firebase.db, 'products'), {
+                    ...productData,
+                    createdAt: Timestamp.now(),
+                });
+                alert("Product added successfully!");
+            }
 
             // 3. Reset Form & Refresh
             resetForm();
             fetchProducts();
-            alert("Product added successfully!");
 
         } catch (error) {
-            console.error("Error adding product: ", error);
-            alert("Failed to add product.");
+            console.error("Error saving product: ", error);
+            alert("Failed to save product.");
         } finally {
             setUploading(false);
         }
     };
 
     const resetForm = () => {
+        setEditingId(null);
+        setExistingImageUrl('');
         setName('');
         setPrice('');
         setDescription('');
@@ -212,6 +244,8 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                                 <img src={URL.createObjectURL(croppedBlob)} alt="Preview" className="w-full h-full object-cover" />
                             ) : tempImgSrc ? (
                                 <img src={tempImgSrc} alt="Preview" className="w-full h-full object-cover opacity-50" />
+                            ) : existingImageUrl ? (
+                                <img src={existingImageUrl} alt="Current" className="w-full h-full object-cover" />
                             ) : (
                                 <div className="space-y-2 text-gray-400">
                                     <span className="material-symbols-outlined text-4xl">add_photo_alternate</span>
@@ -243,8 +277,11 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                 <div className="lg:col-span-2">
                     <form onSubmit={handleSubmit} className="bg-white dark:bg-[#1a261f] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[#2a4032] space-y-6">
                         <div className="flex justify-between items-center mb-2">
-                            <h3 className="font-bold dark:text-white">Product Details</h3>
-                            {uploading && <span className="text-primary text-sm font-bold animate-pulse">Uploading...</span>}
+                            <h3 className="font-bold dark:text-white">{editingId ? '✏️ Editing Product' : 'Product Details'}</h3>
+                            <div className="flex items-center gap-3">
+                                {editingId && <span className="text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-bold">Editing Mode</span>}
+                                {uploading && <span className="text-primary text-sm font-bold animate-pulse">Uploading...</span>}
+                            </div>
                         </div>
 
                         {/* Name & SKU */}
@@ -358,14 +395,14 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                                 onClick={resetForm}
                                 className="px-6 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
                             >
-                                Reset
+                                {editingId ? 'Cancel Edit' : 'Reset'}
                             </button>
                             <button
                                 type="submit" disabled={uploading}
-                                className="px-8 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                className={`px-8 py-3 text-white rounded-xl font-bold transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${editingId ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20' : 'bg-primary hover:bg-primary/90 shadow-primary/20'}`}
                             >
-                                {uploading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">save</span>}
-                                {uploading ? 'Saving...' : 'Save Product'}
+                                {uploading ? <span className="material-symbols-outlined animate-spin">progress_activity</span> : <span className="material-symbols-outlined">{editingId ? 'edit' : 'save'}</span>}
+                                {uploading ? 'Saving...' : editingId ? 'Update Product' : 'Save Product'}
                             </button>
                         </div>
                     </form>
@@ -412,12 +449,22 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                        <button
-                                            onClick={() => handleDelete(product.id)}
-                                            className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 rounded-lg transition-colors"
-                                        >
-                                            <span className="material-symbols-outlined text-lg">delete</span>
-                                        </button>
+                                        <div className="flex items-center justify-end gap-1">
+                                            <button
+                                                onClick={() => handleEdit(product)}
+                                                className={`p-2 rounded-lg transition-colors ${editingId === product.id ? 'text-amber-600 bg-amber-50 dark:bg-amber-900/20' : 'text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20'}`}
+                                                title="Edit product"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">edit</span>
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(product.id)}
+                                                className="text-red-500 hover:text-red-700 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                title="Delete product"
+                                            >
+                                                <span className="material-symbols-outlined text-lg">delete</span>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}

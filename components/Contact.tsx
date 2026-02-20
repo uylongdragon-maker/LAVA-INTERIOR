@@ -1,7 +1,10 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { initFirebase } from '../services/firebase';
+import { SiteConfig, Showroom } from '../types';
 
-const SHOWROOMS = [
+const DEFAULT_SHOWROOMS: Showroom[] = [
   {
     city: 'TP. Hồ Chí Minh',
     address: 'Lava Tower, Thảo Điền, Quận 2',
@@ -18,6 +21,26 @@ const SHOWROOMS = [
 
 const Contact: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
+  const [config, setConfig] = useState<SiteConfig | null>(null);
+
+  useEffect(() => {
+    const fetchConfig = async () => {
+      const firebase = initFirebase();
+      if (!firebase) return;
+      const docSnap = await getDoc(doc(firebase.db, 'site_config', 'main'));
+      if (docSnap.exists()) {
+        setConfig(docSnap.data() as SiteConfig);
+      }
+    };
+    fetchConfig();
+  }, []);
+
+  const showrooms = (config?.showrooms && config.showrooms.length > 0) ? config.showrooms : DEFAULT_SHOWROOMS;
+  const pageTitle = config?.contactPage?.pageTitle || 'Liên hệ với Lava';
+  const pageSubtitle = config?.contactPage?.pageSubtitle || 'Ghé thăm showroom của chúng tôi hoặc bắt đầu dự án thiết kế riêng. Chúng tôi kiến tạo không gian kể câu chuyện của bạn.';
+  const contactPhone = config?.contactPhone || '(+84) 123 456 7890';
+  const contactEmail = config?.contactEmail || 'hello@lava-interior.vn';
+  const workingHours = config?.contactPage?.workingHours || 'T2 – T7: 9:00 – 18:00';
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,10 +54,10 @@ const Contact: React.FC = () => {
       <div className="mb-12 md:mb-16 flex flex-col md:flex-row md:items-end md:justify-between gap-6 reveal">
         <div className="max-w-2xl">
           <h1 className="text-4xl font-extrabold tracking-tight text-text-main dark:text-white sm:text-5xl lg:text-6xl mb-4">
-            Liên hệ với Lava
+            {pageTitle}
           </h1>
           <p className="text-lg text-[#578e6b] dark:text-gray-400 font-medium">
-            Ghé thăm showroom của chúng tôi hoặc bắt đầu dự án thiết kế riêng. Chúng tôi kiến tạo không gian kể câu chuyện của bạn.
+            {pageSubtitle}
           </p>
         </div>
         <div className="hidden md:flex gap-2 bg-white dark:bg-white/5 p-1.5 rounded-xl border border-[#d3e4d9] dark:border-white/10">
@@ -96,7 +119,7 @@ const Contact: React.FC = () => {
           <div className="flex items-center justify-between pb-2">
             <h3 className="text-lg font-bold text-[#101913] dark:text-white">Showroom của chúng tôi</h3>
           </div>
-          {SHOWROOMS.map((showroom, idx) => (
+          {showrooms.map((showroom, idx) => (
             <div
               key={idx}
               className="reveal group relative overflow-hidden rounded-xl bg-white dark:bg-[#1A261F] shadow-sm border border-[#d3e4d9] dark:border-white/10 hover:shadow-md transition-all hover-lift"
@@ -119,17 +142,17 @@ const Contact: React.FC = () => {
           <div className="reveal bg-gradient-to-br from-primary/5 to-accent-gold/5 dark:from-primary/10 dark:to-accent-gold/10 rounded-xl p-6 border border-primary/10 dark:border-primary/20 space-y-4 mt-2">
             <h4 className="font-bold text-text-main dark:text-white">Liên hệ trực tiếp</h4>
             <div className="space-y-3">
-              <a href="tel:+841234567890" className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+              <a href={`tel:${contactPhone.replace(/\s/g, '')}`} className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-[18px] text-primary">call</span>
-                (+84) 123 456 7890
+                {contactPhone}
               </a>
-              <a href="mailto:hello@lava-interior.vn" className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+              <a href={`mailto:${contactEmail}`} className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-[18px] text-primary">mail</span>
-                hello@lava-interior.vn
+                {contactEmail}
               </a>
               <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
                 <span className="material-symbols-outlined text-[18px] text-primary">schedule</span>
-                T2 – T7: 9:00 – 18:00
+                {workingHours}
               </div>
             </div>
           </div>
