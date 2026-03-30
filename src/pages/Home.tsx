@@ -6,6 +6,7 @@ import HydrographicTech from '../../components/HydrographicTech';
 import { doc, getDoc } from 'firebase/firestore';
 import { initFirebase } from '../../services/firebase';
 import { SiteConfig, HomeCollectionItem, HomeStat, HomeIntro } from '../../types';
+import ChatWidget from '../../components/ChatWidget';
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
@@ -27,10 +28,12 @@ const Home: React.FC = () => {
         <div className="page-enter">
             <Hero onExplore={() => navigate('/products')} />
             <HydrographicTech />
+            <FeaturedCategories collections={config?.homeCollections || []} />
             <LegacySection
                 intro={config?.homeIntro}
                 stats={config?.homeStats || []}
             />
+            <ChatWidget />
         </div>
     );
 };

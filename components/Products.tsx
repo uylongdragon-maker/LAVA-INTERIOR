@@ -3,10 +3,12 @@ import { collection, onSnapshot } from 'firebase/firestore';
 import { initFirebase } from '../services/firebase';
 import { Category, Material, Product, ProductStatus } from '../types';
 import { PRODUCTS } from '../constants';
-import { useScrollReveal } from '../src/hooks/useScrollReveal'; // Adjusted path if needed, check tsconfig
+import { useScrollReveal } from '../src/hooks/useScrollReveal';
+import { useCart } from '../src/contexts/CartContext';
 import ProductDetailModal from './ProductDetailModal';
 
 const Products: React.FC = () => {
+  const { addToCart } = useCart();
   const [selectedCategory, setSelectedCategory] = useState<Category | 'Tất cả'>('Tất cả');
   const [selectedMaterial, setSelectedMaterial] = useState<Material>(Material.Composite); // Default to Composite to show imported products
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
@@ -195,9 +197,9 @@ const Products: React.FC = () => {
                     {/* Quick Add - Minimal Icon */}
                     <button
                       className="absolute bottom-4 right-4 size-10 flex items-center justify-center bg-white text-black hover:bg-black hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100"
-                      onClick={(e) => { e.stopPropagation(); setSelectedProduct(product); }}
+                      onClick={(e) => { e.stopPropagation(); addToCart(product); }}
                     >
-                      <span className="material-symbols-outlined text-[20px]">add</span>
+                      <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
                     </button>
                   </div>
 

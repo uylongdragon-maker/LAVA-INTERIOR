@@ -46,6 +46,9 @@ export const AdminShell: React.FC<AdminShellProps> = ({ children, activeTab, onT
         { id: 'overview', label: t('dashboard'), icon: 'dashboard' },
         { id: 'products', label: t('products'), icon: 'inventory_2' },
         { id: 'orders', label: t('orders'), icon: 'shopping_cart' },
+        { id: 'promotions', label: 'Khuyến mãi', icon: 'sell' },
+        { id: 'social', label: 'Social Hub', icon: 'share' },
+        { id: 'chat', label: 'Live Chat', icon: 'forum' },
         { id: 'content', label: t('content'), icon: 'edit_document' },
         { id: 'blog', label: 'Blog', icon: 'rss_feed' },
     ];

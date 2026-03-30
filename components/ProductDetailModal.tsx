@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Product, ProductStatus } from '../types';
 import parse from 'html-react-parser';
+import { useCart } from '../src/contexts/CartContext';
 
 interface ProductDetailModalProps {
     product: Product | null;
@@ -10,6 +11,7 @@ interface ProductDetailModalProps {
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClose }) => {
+    const { addToCart } = useCart();
     if (!product) return null;
 
     return ReactDOM.createPortal(
@@ -77,6 +79,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, onClos
                     <div className="mt-4">
                         <button
                             disabled={product.status === ProductStatus.OutOfStock}
+                            onClick={() => { addToCart(product); onClose(); }}
                             className="w-full py-4 bg-black dark:bg-white text-white dark:text-black font-bold text-xs uppercase tracking-[0.2em] hover:opacity-80 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed shadow-none"
                         >
                             {product.status === ProductStatus.OutOfStock ? 'Sold Out' : 'Add to Cart'}

@@ -23,7 +23,8 @@ export interface Product {
   category: Category;
   material: Material;
   price: number;
-  imageUrl: string;
+  imageUrl: string; // Legacy
+  images: string[]; // Support for multiple images
   description: string;
   stock: number;
   sku: string;
@@ -49,6 +50,8 @@ export interface SiteConfig {
   // Hero
   heroTitle: string;
   heroSubtitle: string;
+  heroImage?: string;
+  heroCtaText?: string;
   logo?: string;
 
   // Contact & Footer
@@ -136,12 +139,23 @@ export interface ContactPageConfig {
   workingHours: string;
 }
 
+export interface CartItem {
+  product: Product;
+  quantity: number;
+  selected?: boolean;
+}
+
 export enum OrderStatus {
-  Pending = 'Pending',
-  Processing = 'Processing',
-  Shipped = 'Shipped',
-  Delivered = 'Delivered',
-  Cancelled = 'Cancelled'
+  Pending = 'Chờ xử lý',
+  Processing = 'Đang xử lý',
+  Shipping = 'Đang giao hàng',
+  Completed = 'Hoàn thành',
+  Cancelled = 'Đã hủy'
+}
+
+export enum PaymentMethod {
+  BankQR = 'QR Ngân hàng',
+  Napas = 'Thẻ NAPAS/VISA/MASTER'
 }
 
 export interface OrderItem {
@@ -151,6 +165,44 @@ export interface OrderItem {
   price: number;
 }
 
+export interface SocialMetrics {
+  likes: number;
+  comments: number;
+  shares: number;
+}
+
+export interface SocialPost {
+  id: string;
+  content: string;
+  imageUrl?: string;
+  platform: 'facebook' | 'instagram';
+  metrics: SocialMetrics;
+  createdAt: any;
+  permalink?: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'customer' | 'admin' | 'bot';
+  text: string;
+  timestamp: any;
+}
+
+export interface ChatSession {
+  id: string;
+  customerName: string;
+  phone: string;
+  status: 'active' | 'closed';
+  messages: ChatMessage[];
+  createdAt: any;
+  csCode?: string; // e.g., CS-12345
+}
+
+export interface SocialConfig {
+  fbPageId: string;
+  fbAccessToken: string;
+}
+
 export interface Order {
   id: string;
   customerName: string;
@@ -158,8 +210,23 @@ export interface Order {
   phone: string;
   address: string;
   items: OrderItem[];
+  subtotal: number;
+  vatAmount: number; // 8%
+  discountAmount: number;
   totalAmount: number;
+  paymentMethod: PaymentMethod;
   status: OrderStatus;
   createdAt: any;
-  aiAnalysis?: string;
+  estimatedDeliveryDate?: string;
+  notes?: string;
+}
+
+export interface PromotionCode {
+  id: string;
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  value: number;
+  minOrderAmount?: number;
+  isActive: boolean;
+  expiryDate?: string;
 }

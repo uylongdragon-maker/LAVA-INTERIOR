@@ -1,5 +1,6 @@
 
 import { initializeApp, FirebaseApp } from 'firebase/app';
+import { getAnalytics, Analytics } from 'firebase/analytics';
 import { getFirestore, collection, addDoc, deleteDoc, doc, getDoc, Timestamp, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -9,11 +10,13 @@ const firebaseConfig = {
     storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
     appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
+    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
 };
 
 // Lazy initialization
 let app: FirebaseApp | null = null;
 let db: Firestore | null = null;
+let analytics: Analytics | null = null;
 
 const isConfigured = (): boolean => {
     return !!(
@@ -25,7 +28,7 @@ const isConfigured = (): boolean => {
 };
 
 export const initFirebase = () => {
-    if (app) return { db: db!, app };
+    if (app) return { db: db!, app, analytics };
     if (!isConfigured()) {
         console.warn('Firebase credentials not configured. Using localStorage fallback.');
         return null;
@@ -33,7 +36,8 @@ export const initFirebase = () => {
     try {
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        return { db, app };
+        analytics = getAnalytics(app);
+        return { db, app, analytics };
     } catch (error) {
         console.error('Firebase initialization failed:', error);
         return null;
@@ -165,5 +169,29 @@ export const deleteDesign = async (id: string): Promise<boolean> => {
     } catch (error) {
         console.error('Failed to delete design:', error);
         return false;
+    }
+};
+
+import { Order } from '../types';
+
+export const createOrder = async (order: Omit<Order, 'id'>) => {
+    const firebase = initFirebase();
+    if (!firebase) {
+        // Fallback to localStorage for demo
+        const orders = JSON.parse(localStorage.getItem('lava_orders') || '[]');
+        const newOrder = { ...order, id: 'LAVA-' + Math.random().toString(36).substr(2, 9).toUpperCase() };
+        orders.push(newOrder);
+        localStorage.setItem('lava_orders', JSON.stringify(orders));
+        return { id: newOrder.id };
+    }
+    try {
+        const docRef = await addDoc(collection(firebase.db, 'orders'), {
+            ...order,
+            createdAt: Timestamp.now()
+        });
+        return { id: docRef.id };
+    } catch (error) {
+        console.error("Error creating order", error);
+        throw error;
     }
 };

@@ -12,9 +12,12 @@ const NAV_ITEMS = [
   { id: '/contact', name: 'Liên hệ', icon: 'mail' },
 ];
 
+import { useCart } from '../src/contexts/CartContext';
+
 const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { cartItems, totalCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -130,9 +133,16 @@ const Navbar: React.FC = () => {
             <button className={`p-2 rounded-full transition-colors ${(isScrolled || !isHome) ? 'hover:bg-primary/5 text-gray-700 dark:text-white' : 'hover:bg-white/10 text-white'}`}>
               <span className="material-symbols-outlined text-[22px]">search</span>
             </button>
-            <button className={`p-2 rounded-full transition-colors relative ${(isScrolled || !isHome) ? 'hover:bg-primary/5 text-gray-700 dark:text-white' : 'hover:bg-white/10 text-white'}`}>
+            <button 
+              onClick={() => handleNavigate('/cart')}
+              className={`p-2 rounded-full transition-colors relative ${(isScrolled || !isHome) ? 'hover:bg-primary/5 text-gray-700 dark:text-white' : 'hover:bg-white/10 text-white'}`}
+            >
               <span className="material-symbols-outlined text-[22px]">shopping_bag</span>
-              <span className="absolute top-1.5 right-1.5 size-2 bg-primary rounded-full ring-2 ring-white dark:ring-black"></span>
+              {totalCount > 0 && (
+                <span className="absolute -top-1 -right-1 size-5 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white dark:ring-black animate-scale-in">
+                  {totalCount}
+                </span>
+              )}
             </button>
 
             {/* Dark Mode Toggle */}
