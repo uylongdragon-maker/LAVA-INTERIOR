@@ -107,7 +107,7 @@ const Navbar: React.FC = () => {
               </div>
             )}
             <h1 className={`text-2xl font-display font-bold tracking-tight transition-colors duration-300 ${isScrolled || !isHome ? 'text-primary-dark dark:text-primary' : 'text-white'}`}>
-              Lava Interior
+              {config?.siteName || 'Lava Interior'}
             </h1>
           </a>
 

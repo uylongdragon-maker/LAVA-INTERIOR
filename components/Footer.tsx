@@ -74,7 +74,7 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 border-b border-white/5 pb-12 relative z-10">
         <div className="col-span-1 md:col-span-2 space-y-8">
           <div>
-            <h2 className="text-4xl font-display font-medium text-white tracking-tight">Lava Interior</h2>
+            <h2 className="text-4xl font-display font-medium text-white tracking-tight">{config?.siteName || 'Lava Interior'}</h2>
             <span className="text-xs text-accent-gold uppercase tracking-[0.3em] font-bold">Luxury Furniture</span>
           </div>
           <p className="text-gray-400 max-w-md leading-relaxed font-light text-base">

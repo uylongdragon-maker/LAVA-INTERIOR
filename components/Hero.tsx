@@ -61,12 +61,14 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
         <span className="inline-block py-1.5 px-4 border border-accent-gold/40 rounded-full text-xs font-bold text-accent-gold uppercase tracking-[0.3em] backdrop-blur-md shadow-lg">
           Est. 2024 • Luxury Furniture
         </span>
-        <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-medium text-white leading-none tracking-tight drop-shadow-2xl">
-          {config?.heroTitle || 'LAVA INTERIOR'}
-        </h1>
-        <p className="text-xl md:text-3xl text-white/90 font-light max-w-2xl mx-auto leading-relaxed font-body">
-          {config?.heroSubtitle || 'Nghệ thuật bê tông & Nội thất thủ công'}
-        </p>
+        <h1 
+          className="font-display text-4xl md:text-7xl lg:text-8xl font-medium text-white leading-tight tracking-tight drop-shadow-2xl px-6"
+          dangerouslySetInnerHTML={{ __html: config?.heroTitle || 'LAVA INTERIOR' }}
+        />
+        <p 
+          className="text-lg md:text-2xl text-white/90 font-light max-w-3xl mx-auto leading-relaxed font-body px-8 opacity-80"
+          dangerouslySetInnerHTML={{ __html: config?.heroSubtitle || 'Nghệ thuật bê tông & Nội thất thủ công' }}
+        />
 
         <div className="pt-10 flex flex-col md:flex-row gap-6 justify-center items-center">
           <button
