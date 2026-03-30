@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
     },
     plugins: [react()],
+    build: {
+      chunkSizeWarningLimit: 1600,
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
