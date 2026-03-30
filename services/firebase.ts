@@ -36,7 +36,11 @@ export const initFirebase = () => {
     try {
         app = initializeApp(firebaseConfig);
         db = getFirestore(app);
-        analytics = getAnalytics(app);
+        try {
+            analytics = getAnalytics(app);
+        } catch (e) {
+            console.warn('Firebase Analytics failed to initialize:', e);
+        }
         return { db, app, analytics };
     } catch (error) {
         console.error('Firebase initialization failed:', error);
