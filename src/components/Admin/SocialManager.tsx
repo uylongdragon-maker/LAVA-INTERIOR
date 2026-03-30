@@ -375,14 +375,24 @@ const SocialManager: React.FC = () => {
                         <div className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-[40px] text-white shadow-2xl relative overflow-hidden group">
                             <div className="absolute -top-10 -right-10 size-40 bg-primary/10 rounded-full blur-[60px] group-hover:bg-primary/20 transition-all duration-700" />
                             <div className="relative z-10 space-y-4">
-                                <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Tình trạng hệ thống</h4>
-                                <div className="flex items-center gap-2">
-                                    <span className="size-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.5)]" />
-                                    <p className="text-xs font-light text-white/80">Facebook API: Hoạt động bình thường</p>
-                                </div>
-                                <p className="text-[11px] text-white/40 leading-relaxed font-light mt-6 italic">
-                                    Dữ liệu được cập nhật trực tiếp từ hệ thống Graph API của Meta.
-                                </p>
+                                <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Kế hoạch Phân luồng</h4>
+                                <ul className="space-y-3">
+                                    <li className="flex items-center gap-2 text-xs text-white/70">
+                                        <span className="size-1.5 bg-primary rounded-full" />
+                                        Đăng bài chéo các Group nội thất
+                                    </li>
+                                    <li className="flex items-center gap-2 text-xs text-white/70">
+                                        <span className="size-1.5 bg-primary rounded-full" />
+                                        Chia sẻ lên Story Instagram
+                                    </li>
+                                    <li className="flex items-center gap-2 text-xs text-white/70">
+                                        <span className="size-1.5 bg-primary rounded-full" />
+                                        Gửi tin nhắn mẫu cho khách quan tâm
+                                    </li>
+                                </ul>
+                                <button className="w-full mt-4 py-3 border border-white/10 rounded-xl text-[10px] uppercase font-bold hover:bg-white/5 transition-all">
+                                    Thiết lập luồng mới
+                                </button>
                             </div>
                         </div>
                     </div>

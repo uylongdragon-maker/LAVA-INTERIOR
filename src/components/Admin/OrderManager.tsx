@@ -59,8 +59,20 @@ const OrderManager: React.FC = () => {
 
     return (
         <div className="bg-white dark:bg-[#1a261f] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[#2a4032] mt-6">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-primary dark:text-[#6fbe8e]">{t('orders')}</h2>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 pb-6 border-b border-gray-100 dark:border-white/5">
+                <h2 className="text-2xl font-bold font-display text-primary dark:text-[#6fbe8e]">{t('orders')}</h2>
+                
+                <div className="flex flex-wrap gap-4 w-full md:w-auto">
+                    {/* Search */}
+                    <div className="relative flex-1 md:flex-none md:w-64">
+                        <span className="material-symbols-outlined absolute left-3 top-2.5 text-gray-400 text-sm">search</span>
+                        <input 
+                            type="text"
+                            placeholder="Tìm mã đơn, tên, sđt..."
+                            className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/10 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
+                        />
+                    </div>
+                </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -106,14 +118,39 @@ const OrderManager: React.FC = () => {
                                         {order.status}
                                     </span>
                                 </td>
-                                <td className="py-4 flex flex-col gap-2 min-w-[120px]">
-                                    <select
-                                        value={order.status}
-                                        onChange={(e) => updateStatus(order.id, e.target.value as OrderStatus)}
-                                        className="p-1 px-2 rounded-lg border border-gray-200 dark:border-white/10 text-[11px] dark:bg-black/40 dark:text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                                <td className="py-4 flex flex-col gap-2 min-w-[140px]">
+                                    <div className="flex flex-wrap gap-1">
+                                        <button 
+                                            onClick={() => updateStatus(order.id, OrderStatus.Processing)}
+                                            className="px-2 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-300 rounded text-[9px] font-bold hover:bg-blue-100 transition-colors"
+                                            title="Xử lý"
+                                        >
+                                            Xử lý
+                                        </button>
+                                        <button 
+                                            onClick={() => updateStatus(order.id, OrderStatus.Shipping)}
+                                            className="px-2 py-1 bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-300 rounded text-[9px] font-bold hover:bg-orange-100 transition-colors"
+                                            title="Giao hàng"
+                                        >
+                                            Giao
+                                        </button>
+                                        <button 
+                                            onClick={() => updateStatus(order.id, OrderStatus.Completed)}
+                                            className="px-2 py-1 bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-300 rounded text-[9px] font-bold hover:bg-green-100 transition-colors"
+                                            title="Hoàn thành"
+                                        >
+                                            Xong
+                                        </button>
+                                    </div>
+                                    <button 
+                                        onClick={() => {
+                                            alert(`Đẫ phân luồng đơn hàng #${order.id} tới bộ phận vận chuyển.`);
+                                        }}
+                                        className="w-full py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 hover:bg-gray-200 transition-colors"
                                     >
-                                        {Object.values(OrderStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
+                                        <span className="material-symbols-outlined text-sm">Alt_Route</span>
+                                        Phân luồng
+                                    </button>
                                 </td>
                             </tr>
                         ))}
