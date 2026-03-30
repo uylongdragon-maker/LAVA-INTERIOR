@@ -79,12 +79,12 @@ const ChatWidget: React.FC = () => {
     };
 
     return (
-        <div className="fixed bottom-8 right-8 z-[9999] font-body">
+        <div className="chat-widget-container font-body">
             {/* Chat Bubble */}
             {!isOpen && (
                 <button 
                     onClick={() => setIsOpen(true)}
-                    className="size-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all animate-bounce"
+                    className="size-16 bg-primary text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all"
                 >
                     <span className="material-symbols-outlined text-3xl">chat</span>
                     <span className="absolute -top-1 -right-1 size-5 bg-red-500 border-2 border-white rounded-full flex items-center justify-center text-[10px] font-bold">1</span>

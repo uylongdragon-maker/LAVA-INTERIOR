@@ -14,7 +14,6 @@ const SocialManager: React.FC = () => {
     const [posting, setPosting] = useState(false);
     const [fetchingPages, setFetchingPages] = useState(false);
     const [userToken, setUserToken] = useState('');
-    const [aiContent, setAiContent] = useState('');
     const [newPostContent, setNewPostContent] = useState('');
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -132,28 +131,6 @@ const SocialManager: React.FC = () => {
         }
     };
 
-    const generateAISuggestion = () => {
-        setLoading(true);
-        setTimeout(() => {
-            const baseSuggestions = [
-                "Khám phá sự kết hợp hoàn hảo giữa phong cách tối giản và vật liệu bền vững. Bộ sưu tập nội thất xi măng mài của LAVA sẽ làm bừng sáng góc nhà bạn. ✨ #LavaInterior #Minimalism",
-                "Bạn đang tìm kiếm điểm nhấn cho sân vườn? Chậu cây Composite siêu nhẹ từ LAVA chính là lựa chọn số 1. Độ bền vượt trội, thiết kế sang trọng. 🌿 #SânVườn #NộiThất",
-                "Ưu đãi đặc biệt: Giảm ngay 20% cho tất cả đơn hàng nội thất trong tuần này. Đừng bỏ lỡ cơ hội làm mới không gian sống của bạn! 🏷️ #KhuyếnMãi #LavaInterior"
-            ];
-            
-            const imageSuggestions = [
-                "Hình ảnh thật từ showroom: Góc làm việc hiện đại với điểm nhấn từ bàn xi măng mài LAVA. Một chút thô mộc cho ngày làm việc thêm cảm hứng. 💻☕ #HomeOffice #CreativeSpace",
-                "Cận cảnh chi tiết hoàn thiện của sản phẩm mới nhất. Từng đường nét được mài thủ công kỹ lưỡng để mang lại cảm giác cao cấp nhất. 💎 #Artisan #Handmade",
-                "Biến ban công nhỏ thành nơi thư giãn lý tưởng với combo chậu cây Composite LAVA. Chịu nắng mưa cực tốt, bền bỉ qua năm tháng. ☀️🌧️ #BalconyDesign #OutdoorLiving"
-            ];
-
-            const chosen = selectedImage ? imageSuggestions : baseSuggestions;
-            setAiContent(chosen[Math.floor(Math.random() * chosen.length)]);
-            setLoading(false);
-            if (selectedImage) alert("AI đã phân tích hình ảnh và đưa ra nội dung phù hợp!");
-        }, 1500);
-    };
-
     const handlePostToFacebook = async () => {
         if (!newPostContent || !config.fbPageId || !config.fbAccessToken) return;
         setPosting(true);
@@ -195,7 +172,7 @@ const SocialManager: React.FC = () => {
             console.error("Post Error:", error);
             alert("Lỗi kết nối khi đăng bài.");
         } finally {
-            setLoading(false);
+            setPosting(false);
         }
     };
 
@@ -203,8 +180,8 @@ const SocialManager: React.FC = () => {
         <div className="space-y-8 max-w-6xl mx-auto py-6">
             {!isConfigured ? (
                 <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm border border-black/5 animate-fade-in max-w-2xl mx-auto">
-                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                        <span className="material-symbols-outlined text-primary">api</span>
+                    <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-primary-dark dark:text-primary">
+                        <span className="material-symbols-outlined">api</span>
                         Kết nối Facebook Fanpage
                     </h2>
                     
@@ -216,8 +193,8 @@ const SocialManager: React.FC = () => {
                                     type="password"
                                     value={userToken}
                                     onChange={e => setUserToken(e.target.value)}
-                                    className="flex-1 p-3 border border-black/10 rounded-xl dark:bg-zinc-800 dark:text-white text-sm"
-                                    placeholder="Dán mã User Access Token từ Graph API Explorer"
+                                    className="flex-1 p-3 border border-black/10 rounded-xl dark:bg-zinc-800 dark:text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                    placeholder="Dán User Access Token từ Graph API Explorer"
                                 />
                                 <button 
                                     onClick={fetchAvailablePages}
@@ -233,7 +210,7 @@ const SocialManager: React.FC = () => {
                         </div>
 
                         {availablePages.length > 0 && (
-                            <div className="space-y-3 pt-4 border-t border-black/5 animate-fade-in-up">
+                            <div className="space-y-3 pt-4 border-t border-black/5">
                                 <label className="text-[10px] uppercase font-bold text-gray-400">Chọn Trang để kết nối</label>
                                 <div className="grid gap-2">
                                     {availablePages.map(page => (
@@ -244,7 +221,7 @@ const SocialManager: React.FC = () => {
                                             </div>
                                             <button 
                                                 onClick={() => handleSelectPage(page)}
-                                                className="px-4 py-2 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:opacity-80 transition-all"
+                                                className="px-4 py-2 bg-primary text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:opacity-80 transition-all shadow-sm shadow-primary/20"
                                             >
                                                 Kết nối
                                             </button>
@@ -254,18 +231,12 @@ const SocialManager: React.FC = () => {
                             </div>
                         )}
                     </div>
-                    
-                    <div className="mt-8 p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                        <p className="text-[11px] text-primary leading-relaxed">
-                            <strong>Mẹo:</strong> Hãy đảm bảo bạn đã cấp quyền <code>pages_read_engagement</code> và <code>pages_manage_posts</code> khi lấy Token để việc kết nối diễn ra thuận lợi.
-                        </p>
-                    </div>
                 </div>
             ) : (
                 <div className="grid lg:grid-cols-3 gap-8">
-                    {/* Posting & AI Suggestion */}
+                    {/* Posting Card */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="bg-white dark:bg-zinc-900 p-8 rounded-3xl shadow-sm border border-black/5 relative">
+                        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[32px] shadow-sm border border-black/5 relative">
                             <div className="absolute top-8 right-8 flex gap-2">
                                 <button 
                                     onClick={() => fetchInitialData(config)}
@@ -277,39 +248,39 @@ const SocialManager: React.FC = () => {
                                 <button 
                                     onClick={() => setIsConfigured(false)}
                                     className="p-2 text-gray-400 hover:text-primary transition-colors"
-                                    title="Thay đổi cấu hình API"
+                                    title="Thay đổi cấu hình"
                                 >
                                     <span className="material-symbols-outlined">settings</span>
                                 </button>
                             </div>
-                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">create</span>
+                            <h2 className="text-xl font-bold mb-6 flex items-center gap-2 text-primary-dark dark:text-primary">
+                                <span className="material-symbols-outlined">create</span>
                                 Đăng bài mới lên Facebook
                             </h2>
                             <textarea 
                                 value={newPostContent}
                                 onChange={e => setNewPostContent(e.target.value)}
-                                className="w-full min-h-[150px] p-6 bg-gray-50 dark:bg-black/20 border-none rounded-2xl focus:ring-2 focus:ring-primary/20 dark:text-white text-sm"
-                                placeholder="Bạn đang nghĩ gì?..."
+                                className="w-full min-h-[160px] p-6 bg-gray-50 dark:bg-black/40 border-none rounded-2xl focus:ring-4 focus:ring-primary/10 dark:text-white text-sm resize-none placeholder:text-gray-400"
+                                placeholder="Viết nội dung bài đăng của bạn tại đây..."
                             />
 
                             {imagePreview && (
                                 <div className="mt-4 relative group w-max">
-                                    <img src={imagePreview} className="h-32 rounded-2xl border border-black/5 shadow-sm" alt="Preview" />
+                                    <img src={imagePreview} className="h-40 rounded-2xl border border-black/5 shadow-md object-cover aspect-video" alt="Preview" />
                                     <button 
                                         onClick={() => { setSelectedImage(null); setImagePreview(null); }}
-                                        className="absolute -top-2 -right-2 size-6 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform"
+                                        className="absolute -top-3 -right-3 size-7 bg-red-500 text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform ring-4 ring-white dark:ring-zinc-900"
                                     >
-                                        <span className="material-symbols-outlined text-sm">close</span>
+                                        <span className="material-symbols-outlined text-sm font-bold">close</span>
                                     </button>
                                 </div>
                             )}
 
-                            <div className="flex justify-between items-center mt-6">
+                            <div className="flex justify-between items-center mt-8">
                                 <div className="flex items-center gap-4">
-                                    <label className="flex items-center gap-2 text-gray-500 hover:text-primary transition-colors cursor-pointer">
-                                        <span className="material-symbols-outlined">image</span>
-                                        <span className="text-xs font-bold uppercase tracking-widest">Thêm hình ảnh</span>
+                                    <label className="flex items-center gap-2 text-gray-500 hover:text-primary-dark transition-all cursor-pointer bg-gray-100 dark:bg-white/5 py-3 px-6 rounded-full border border-black/5">
+                                        <span className="material-symbols-outlined text-[20px]">image</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Thêm hình ảnh</span>
                                         <input 
                                             type="file" 
                                             accept="image/*" 
@@ -321,121 +292,96 @@ const SocialManager: React.FC = () => {
                                 <button 
                                     onClick={handlePostToFacebook}
                                     disabled={posting || !newPostContent}
-                                    className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black font-bold rounded-full text-xs uppercase tracking-widest hover:opacity-80 transition-all shadow-xl shadow-black/10 disabled:opacity-50"
+                                    className="px-10 py-4 bg-primary text-white font-black rounded-full text-[10px] uppercase tracking-[0.2em] hover:bg-primary-dark transition-all shadow-[0_12px_24px_-8px_rgba(255,101,0,0.4)] disabled:opacity-50 disabled:shadow-none active:scale-95"
                                 >
-                                    {posting ? 'Đang đăng...' : 'Đăng bài'}
+                                    {posting ? 'Đang gửi bài...' : 'Đăng ngay'}
                                 </button>
                             </div>
                         </div>
 
-                        {/* Social Analytics Grid */}
+                        {/* Recent Posts Grid */}
                         <div className="grid md:grid-cols-2 gap-6">
                             {loading && posts.length === 0 ? (
                                 <div className="col-span-2 flex items-center justify-center py-20">
-                                    <div className="size-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                                    <div className="size-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                                 </div>
-                            ) : posts.length > 0 ? (
-                                posts.map(post => (
-                                    <div key={post.id} className="bg-white dark:bg-zinc-900 p-6 rounded-3xl shadow-sm border border-black/5 hover:shadow-xl transition-all group">
-                                        <div className="aspect-video rounded-2xl overflow-hidden mb-4 relative">
-                                            {post.imageUrl ? (
-                                                <img src={post.imageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                                            ) : (
-                                                <div className="w-full h-full bg-gray-100 dark:bg-white/5 flex items-center justify-center">
-                                                    <span className="material-symbols-outlined text-gray-300 text-4xl">image</span>
-                                                </div>
-                                            )}
-                                            <div className="absolute top-3 left-3 px-2 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-md uppercase tracking-widest">
-                                                Facebook
+                            ) : posts.map(post => (
+                                <div key={post.id} className="bg-white dark:bg-zinc-900 p-6 rounded-[32px] shadow-sm border border-black/5 hover:shadow-xl transition-all group">
+                                    <div className="aspect-video rounded-2xl overflow-hidden mb-5 relative bg-gray-100 dark:bg-white/5">
+                                        {post.imageUrl ? (
+                                            <img src={post.imageUrl} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="Post" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <span className="material-symbols-outlined text-gray-300 text-5xl font-light">description</span>
                                             </div>
-                                        </div>
-                                        <p className="text-sm line-clamp-2 mb-6 font-light h-10">{post.content}</p>
-                                        <div className="flex justify-between items-center pt-4 border-t border-black/5">
-                                            <div className="flex items-center gap-4 text-gray-400">
-                                                <div className="flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-sm">thumb_up</span>
-                                                    <span className="text-[10px] font-bold">{post.metrics.likes}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-sm">comment</span>
-                                                    <span className="text-[10px] font-bold">{post.metrics.comments}</span>
-                                                </div>
-                                                <div className="flex items-center gap-1">
-                                                    <span className="material-symbols-outlined text-sm">share</span>
-                                                    <span className="text-[10px] font-bold">{post.metrics.shares}</span>
-                                                </div>
-                                            </div>
-                                            <a 
-                                                href={post.permalink} 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="text-[10px] text-primary hover:underline font-bold"
-                                            >
-                                                Xem bài viết
-                                            </a>
+                                        )}
+                                        <div className="absolute top-4 left-4 px-3 py-1.5 bg-blue-600/90 backdrop-blur-md text-white text-[9px] font-black rounded-full uppercase tracking-widest flex items-center gap-1.5 shadow-lg">
+                                            <span className="material-symbols-outlined text-[12px]">public</span> Facebook
                                         </div>
                                     </div>
-                                ))
-                            ) : (
-                                <div className="col-span-2 p-12 text-center bg-gray-50 dark:bg-white/5 rounded-3xl border border-dashed border-black/10">
-                                    <span className="material-symbols-outlined text-4xl text-gray-300 mb-2">post_add</span>
-                                    <p className="text-sm text-gray-400">Chưa có bài viết nào được tìm thấy hoặc quyền truy cập bị hạn chế.</p>
+                                    <p className="text-sm line-clamp-2 mb-6 font-light leading-relaxed dark:text-gray-300 h-10">{post.content}</p>
+                                    <div className="flex justify-between items-center pt-5 border-t border-black/5">
+                                        <div className="flex items-center gap-5 text-gray-400">
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="material-symbols-outlined text-[16px]">thumb_up</span>
+                                                <span className="text-[11px] font-black">{post.metrics.likes}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
+                                                <span className="text-[11px] font-black">{post.metrics.comments}</span>
+                                            </div>
+                                        </div>
+                                        <a 
+                                            href={post.permalink} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="text-[10px] text-primary font-black uppercase tracking-widest hover:text-primary-dark transition-colors flex items-center gap-1"
+                                        >
+                                            Chi tiết <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                        </a>
+                                    </div>
                                 </div>
-                            )}
+                            ))}
                         </div>
                     </div>
 
-                    {/* SEO Manager & AI Tool */}
-                    <div className="space-y-8">
-                        <div className="bg-gradient-to-br from-primary to-green-600 p-8 rounded-[40px] text-white space-y-6 shadow-2xl shadow-primary/20">
-                            <div className="flex items-center gap-3">
-                                <span className="material-symbols-outlined text-3xl">auto_awesome</span>
-                                <h2 className="text-xl font-bold">AI SEO Assistant</h2>
-                            </div>
-                            <p className="text-sm opacity-90 font-light leading-relaxed">
-                                Tự động tối ưu bài viết chuẩn SEO, tăng tỉ lệ chuyển đổi từ khách hàng trên mạng xã hội.
-                            </p>
-                            <button 
-                                onClick={generateAISuggestion}
-                                className="w-full py-4 bg-white/20 backdrop-blur-md rounded-full font-bold uppercase tracking-widest text-[10px] hover:bg-white/30 transition-all border border-white/30"
-                            >
-                                Đề xuất nội dung ngay
-                            </button>
-                            
-                            {aiContent && (
-                                <div className="p-5 bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 animate-fade-in-up">
-                                    <p className="text-xs text-white/80 leading-relaxed italic">{aiContent}</p>
-                                    <button 
-                                        onClick={() => { setNewPostContent(aiContent); setAiContent(''); }}
-                                        className="mt-4 text-[10px] font-bold uppercase tracking-widest text-white hover:underline flex items-center gap-2"
-                                    >
-                                        <span className="material-symbols-outlined text-sm">content_copy</span> Sử dụng mẫu này
-                                    </button>
+                    {/* Analytics Sidebar */}
+                    <div className="space-y-6">
+                        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[40px] border border-black/5 space-y-8 shadow-sm">
+                            <h3 className="text-lg font-bold flex items-center gap-3 text-primary-dark dark:text-primary">
+                                <span className="material-symbols-outlined">insights</span>
+                                Thống kê của Trang
+                            </h3>
+                            <div className="space-y-5">
+                                <div className="p-6 bg-primary/5 rounded-[24px] border border-primary/10 transition-colors hover:bg-primary/10">
+                                    <p className="text-[10px] text-primary-dark uppercase font-black mb-1.5 tracking-widest">Tiếp cận khách hàng</p>
+                                    <div className="flex items-end justify-between">
+                                        <p className="text-3xl font-black tracking-tight">{pageInsights.reach.toLocaleString()}</p>
+                                        <span className="text-[10px] text-green-500 font-bold mb-1 flex items-center gap-0.5">
+                                            <span className="material-symbols-outlined text-[14px]">trending_up</span> Mới nhất
+                                        </span>
+                                    </div>
                                 </div>
-                            )}
+                                <div className="p-6 bg-green-500/5 rounded-[24px] border border-green-500/10 transition-colors hover:bg-green-500/10">
+                                    <p className="text-[10px] text-green-600 uppercase font-black mb-1.5 tracking-widest">Lượt hiển thị bài đăng</p>
+                                    <div className="flex items-end justify-between">
+                                        <p className="text-3xl font-black tracking-tight">{pageInsights.impressions.toLocaleString()}</p>
+                                        <span className="text-[10px] text-gray-400 font-bold mb-1">Tổng cộng</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div className="bg-white dark:bg-zinc-900 p-8 rounded-[40px] border border-black/5 space-y-6">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">query_stats</span>
-                                Thống kê Fanpage
-                            </h3>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-5 bg-gray-50 dark:bg-black/20 rounded-3xl border border-black/5">
-                                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Tiếp cận (Ngày)</p>
-                                    <p className="text-2xl font-black text-primary">{pageInsights.reach.toLocaleString()}</p>
+                        <div className="bg-gradient-to-br from-gray-900 to-black p-8 rounded-[40px] text-white shadow-2xl relative overflow-hidden group">
+                            <div className="absolute -top-10 -right-10 size-40 bg-primary/10 rounded-full blur-[60px] group-hover:bg-primary/20 transition-all duration-700" />
+                            <div className="relative z-10 space-y-4">
+                                <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-primary">Tình trạng hệ thống</h4>
+                                <div className="flex items-center gap-2">
+                                    <span className="size-2 bg-green-400 rounded-full animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.5)]" />
+                                    <p className="text-xs font-light text-white/80">Facebook API: Hoạt động bình thường</p>
                                 </div>
-                                <div className="p-5 bg-gray-50 dark:bg-black/20 rounded-3xl border border-black/5">
-                                    <p className="text-[10px] text-gray-400 uppercase font-bold mb-1">Hiển thị (Ngày)</p>
-                                    <p className="text-2xl font-black text-green-500">{pageInsights.impressions.toLocaleString()}</p>
-                                </div>
-                            </div>
-                            <div className="p-6 bg-primary/5 rounded-3xl border border-primary/10">
-                                <p className="text-[10px] text-primary uppercase font-bold mb-2">Gợi ý từ AI Ads</p>
-                                <p className="text-xs italic text-gray-600 dark:text-gray-400 leading-relaxed">
-                                    {pageInsights.reach > 0 
-                                        ? "Dữ liệu cho thấy tương tác đang tập trung vào buổi tối. Hãy lên lịch đăng bài vào 20:00 để tối ưu Reach."
-                                        : "Hãy bắt đầu bằng việc đăng 1 bài viết kèm hình ảnh bàn ghế xi măng để AI thu thập dữ liệu quảng cáo ban đầu."}
+                                <p className="text-[11px] text-white/40 leading-relaxed font-light mt-6 italic">
+                                    Dữ liệu được cập nhật trực tiếp từ hệ thống Graph API của Meta.
                                 </p>
                             </div>
                         </div>

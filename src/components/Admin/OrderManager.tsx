@@ -50,18 +50,6 @@ const OrderManager: React.FC = () => {
         }
     };
 
-    const analyzeOrderAI = async (orderId: string) => {
-        if (!firebase) return;
-        const analysis = "AI Suggestion: Khách hàng tiềm năng. Nên gửi ưu đãi cho đơn hàng tiếp theo.";
-
-        try {
-            await updateDoc(doc(firebase.db, 'orders', orderId), { aiAnalysis: analysis });
-            setOrders(orders.map(o => o.id === orderId ? { ...o, aiAnalysis: analysis } : o));
-            alert(analysis);
-        } catch (error) {
-            console.error("Error saving AI analysis:", error);
-        }
-    };
 
     if (loading) return (
         <div className="flex justify-center items-center py-20">
@@ -83,7 +71,6 @@ const OrderManager: React.FC = () => {
                             <th className="pb-3">Sản phẩm</th>
                             <th className="pb-3">Tổng cộng</th>
                             <th className="pb-3">Trạng thái</th>
-                            <th className="pb-3">Phân tích AI</th>
                             <th className="pb-3">Thao tác</th>
                         </tr>
                     </thead>
@@ -119,9 +106,6 @@ const OrderManager: React.FC = () => {
                                         {order.status}
                                     </span>
                                 </td>
-                                <td className="py-4 max-w-xs text-[11px] text-gray-500 italic leading-snug">
-                                    {order.aiAnalysis || "Chưa có phân tích."}
-                                </td>
                                 <td className="py-4 flex flex-col gap-2 min-w-[120px]">
                                     <select
                                         value={order.status}
@@ -130,13 +114,6 @@ const OrderManager: React.FC = () => {
                                     >
                                         {Object.values(OrderStatus).map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
-                                    <button
-                                        onClick={() => analyzeOrderAI(order.id)}
-                                        className="text-[10px] bg-purple-50 text-purple-700 dark:bg-purple-900/20 dark:text-purple-300 px-2 py-1.5 rounded-lg border border-purple-100 dark:border-purple-800/30 hover:bg-purple-100 transition-colors flex items-center justify-center gap-1 font-bold"
-                                    >
-                                        <span className="material-symbols-outlined text-[12px]">auto_awesome</span>
-                                        AI Analyze
-                                    </button>
                                 </td>
                             </tr>
                         ))}
