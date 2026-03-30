@@ -1,5 +1,26 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #FF6500;
+  --color-primary-dark: #CC5200;
+  --color-accent-green: #25671E;
+  --color-accent-wine: #78350F;
+  --color-accent-gold: #CA8A04;
+  --color-background-light: #FCF8F8;
+  --color-background-dark: #1A1C1A;
+  --color-surface-light: #ffffff;
+  --color-surface-dark: #2C332D;
+  --color-text-main: #213C51;
+  --color-text-gray: #57534E;
+  
+  --font-display: "Playfair Display", serif;
+  --font-body: "Playfair Display", serif;
+  --font-sans: "Playfair Display", serif;
+
+  --shadow-soft: 0 4px 20px -2px rgba(220, 38, 38, 0.1);
+  --shadow-float: 0 10px 40px -10px rgba(220, 38, 38, 0.15);
+}
+
 /* ============================================
    LAVA INTERIOR — Global Styles & Animations
    ============================================ */
