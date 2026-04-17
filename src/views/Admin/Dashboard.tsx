@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { AdminLanguageProvider } from '../../contexts/AdminLanguageContext';
 import AdminShell from '../../components/Admin/AdminShell';
@@ -14,12 +14,11 @@ import PromotionManager from '../../components/Admin/PromotionManager';
 import { collection, getDocs } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { Product, Order } from '../../../types';
-import { PRODUCTS } from '../../../constants';
 import ErrorBoundary from '../../components/ErrorBoundary';
 
 const DashboardContent: React.FC = () => {
     const { user } = useAuth();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState('overview');
 
     // Data state for Overview
@@ -28,9 +27,9 @@ const DashboardContent: React.FC = () => {
 
     useEffect(() => {
         if (!user) {
-            navigate('/admin/login');
+            router.push('/admin/login');
         }
-    }, [user, navigate]);
+    }, [user, router]);
 
     // Fetch data for overview
     useEffect(() => {
@@ -42,7 +41,8 @@ const DashboardContent: React.FC = () => {
             const pSnap = await getDocs(collection(firebase.db, 'products'));
             const fetchedProducts: Product[] = [];
             pSnap.forEach((doc) => fetchedProducts.push({ id: doc.id, ...doc.data() } as Product));
-            setProducts([...fetchedProducts, ...PRODUCTS]);
+            // Use only Firebase products; do NOT merge static PRODUCTS (causes duplicates)
+            setProducts(fetchedProducts);
 
             // Orders
             const oSnap = await getDocs(collection(firebase.db, 'orders'));

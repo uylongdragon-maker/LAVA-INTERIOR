@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useCart } from '../contexts/CartContext';
 
 const Cart: React.FC = () => {
     const { cartItems, removeFromCart, updateQuantity, toggleSelection, clearCart } = useCart();
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const selectedItems = cartItems.filter(item => item.selected);
     const subtotal = selectedItems.reduce((acc, item) => acc + (item.product.price * item.quantity), 0);
@@ -21,7 +21,7 @@ const Cart: React.FC = () => {
                     </div>
                     <p className="text-xl text-gray-500 font-light">Giỏ hàng của bạn đang trống.</p>
                     <button 
-                        onClick={() => navigate('/products')}
+                        onClick={() => router.push('/products')}
                         className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold uppercase tracking-widest text-xs hover:opacity-80 transition-all"
                     >
                         Tiếp tục mua sắm
@@ -53,7 +53,7 @@ const Cart: React.FC = () => {
                                         className="size-5 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
                                     />
                                     <div className="size-24 bg-gray-100 dark:bg-zinc-800 rounded-xl overflow-hidden flex-shrink-0">
-                                        <img src={item.product.imageUrl || item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                                        <img src={item.product.imageUrl || item.product.images?.[0] || ''} alt={item.product.name} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-lg font-bold truncate">{item.product.name}</h3>
@@ -107,7 +107,7 @@ const Cart: React.FC = () => {
                             </div>
 
                             <button 
-                                onClick={() => navigate('/checkout')}
+                                onClick={() => router.push('/checkout')}
                                 disabled={selectedItems.length === 0}
                                 className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold uppercase tracking-[0.2em] text-xs hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-primary/10"
                             >

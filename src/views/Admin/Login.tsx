@@ -1,26 +1,26 @@
 
 import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
 const Login: React.FC = () => {
     const { loginWithCredentials, user } = useAuth() as any;
-    const navigate = useNavigate();
+    const router = useRouter();
     const [username, setUsername] = React.useState('');
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
 
     React.useEffect(() => {
         if (user) {
-            navigate('/admin');
+            router.push('/admin');
         }
-    }, [user, navigate]);
+    }, [user, router]);
 
     const handleCredentialsLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         const result = await loginWithCredentials(username, password);
         if (result && result.success) {
-            navigate('/admin');
+            router.push('/admin');
         } else {
             setError(result?.message || 'Login failed. Check console or create user in Firebase.');
         }

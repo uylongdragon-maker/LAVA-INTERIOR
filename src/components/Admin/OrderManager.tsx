@@ -1,6 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { collection, getDocs, doc, updateDoc, Timestamp, addDoc } from 'firebase/firestore';
+import React, { useState, useEffect, useMemo } from 'react';
+import { collection, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { Order, OrderStatus } from '../../../types';
 
@@ -10,7 +10,7 @@ const OrderManager: React.FC = () => {
     const { t } = useAdminLang();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
-    const firebase = initFirebase();
+    const firebase = useMemo(() => initFirebase(), []);
 
     const fetchOrders = async () => {
         if (!firebase) return;
@@ -144,7 +144,7 @@ const OrderManager: React.FC = () => {
                                     </div>
                                     <button 
                                         onClick={() => {
-                                            alert(`Đẫ phân luồng đơn hàng #${order.id} tới bộ phận vận chuyển.`);
+                                            alert(`Đã phân luồng đơn hàng #${order.id} tới bộ phận vận chuyển.`);
                                         }}
                                         className="w-full py-1.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg text-[10px] font-bold flex items-center justify-center gap-1 hover:bg-gray-200 transition-colors"
                                     >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { collection, getDocs, doc, updateDoc, setDoc, getDoc } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { uploadToCloudinary } from '../../../services/cloudinary';
@@ -17,7 +17,7 @@ const SocialManager: React.FC = () => {
     const [newPostContent, setNewPostContent] = useState('');
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const firebase = initFirebase();
+    const firebase = useMemo(() => initFirebase(), []);
 
     useEffect(() => {
         const fetchConfig = async () => {

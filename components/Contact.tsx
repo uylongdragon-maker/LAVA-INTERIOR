@@ -38,8 +38,8 @@ const Contact: React.FC = () => {
   const showrooms = (config?.showrooms && config.showrooms.length > 0) ? config.showrooms : DEFAULT_SHOWROOMS;
   const pageTitle = config?.contactPage?.pageTitle || 'Liên hệ với Lava';
   const pageSubtitle = config?.contactPage?.pageSubtitle || 'Ghé thăm showroom của chúng tôi hoặc bắt đầu dự án thiết kế riêng. Chúng tôi kiến tạo không gian kể câu chuyện của bạn.';
-  const contactPhone = config?.contactPhone || '(+84) 123 456 7890';
-  const contactEmail = config?.contactEmail || 'hello@lava-interior.vn';
+  const contactPhone = config?.contactPhone || '091 998 8911';
+  const contactEmail = config?.contactEmail || 'info@lavainterior.com';
   const workingHours = config?.contactPage?.workingHours || 'T2 – T7: 9:00 – 18:00';
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -74,7 +74,7 @@ const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-16 border-b border-white/5 pb-12 relative z-10">
         <div className="col-span-1 md:col-span-2 space-y-8">
           <div>
-            <h2 className="text-4xl font-display font-medium text-white tracking-tight">{config?.siteName || 'Lava Interior'}</h2>
+            <h2 className="text-4xl font-display font-medium text-white tracking-tight">{config?.siteName || 'LAVA INTERIOR CO., LTD'}</h2>
             <span className="text-xs text-accent-gold uppercase tracking-[0.3em] font-bold">Luxury Furniture</span>
           </div>
           <p className="text-gray-400 max-w-md leading-relaxed font-light text-base">
@@ -99,15 +99,15 @@ const Footer: React.FC = () => {
           <ul className="space-y-6 text-gray-400 text-sm font-light">
             <li className="flex items-start gap-4">
               <span className="material-symbols-outlined text-primary mt-1">location_on</span>
-              <span className="leading-relaxed">{config?.address || '123 Đường ABC, Quận XYZ, TP.HCM'}</span>
+              <span className="leading-relaxed">{config?.address || '103/11G Nguyen Kim Cuong, Phu Hoa Dong, HCMC, Vietnam'}</span>
             </li>
             <li className="flex items-center gap-4">
               <span className="material-symbols-outlined text-primary">phone</span>
-              <span className="hover:text-white transition-colors cursor-pointer">{config?.contactPhone || '0909 123 456'}</span>
+              <span className="hover:text-white transition-colors cursor-pointer">{config?.contactPhone || '091 998 8911'}</span>
             </li>
             <li className="flex items-center gap-4">
               <span className="material-symbols-outlined text-primary">mail</span>
-              <span className="hover:text-white transition-colors cursor-pointer">{config?.contactEmail || 'contact@lava-interior.com'}</span>
+              <span className="hover:text-white transition-colors cursor-pointer">{config?.contactEmail || 'info@lavainterior.com'}</span>
             </li>
           </ul>
         </div>

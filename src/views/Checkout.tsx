@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { useCart } from '../contexts/CartContext';
 import { createOrder, initFirebase } from '../../services/firebase';
 import { OrderStatus, PaymentMethod, PromotionCode } from '../../types';
@@ -7,7 +7,7 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 
 const Checkout: React.FC = () => {
     const { cartItems, clearCart } = useCart();
-    const navigate = useNavigate();
+    const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [coupon, setCoupon] = useState('');
     const [discount, setDiscount] = useState(0);
@@ -94,7 +94,7 @@ const Checkout: React.FC = () => {
             paymentMethod: form.paymentMethod,
             status: OrderStatus.Pending,
             createdAt: new Date(),
-            notes: `Payment via ${form.paymentMethod}`
+            notes: `Thanh toán qua ${form.paymentMethod}`
         };
 
         try {
@@ -124,7 +124,7 @@ const Checkout: React.FC = () => {
                         </p>
                     </div>
                     <button 
-                        onClick={() => navigate('/')}
+                        onClick={() => router.push('/')}
                         className="w-full py-4 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold uppercase tracking-widest text-xs hover:opacity-80 transition-all"
                     >
                         Quay về trang chủ
@@ -140,7 +140,7 @@ const Checkout: React.FC = () => {
                 <div className="text-center space-y-6">
                     <p className="text-xl text-gray-500 font-light">Không có sản phẩm nào được chọn để thanh toán.</p>
                     <button 
-                        onClick={() => navigate('/cart')}
+                        onClick={() => router.push('/cart')}
                         className="px-8 py-3 bg-black dark:bg-white text-white dark:text-black rounded-full font-bold uppercase tracking-widest text-xs"
                     >
                         Quay lại giỏ hàng
@@ -258,7 +258,7 @@ const Checkout: React.FC = () => {
                             {selectedItems.map(item => (
                                 <div key={item.product.id} className="flex gap-4 items-center">
                                     <div className="size-16 bg-white dark:bg-zinc-800 rounded-xl overflow-hidden flex-shrink-0 border border-black/5">
-                                        <img src={item.product.imageUrl || item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                                        <img src={item.product.imageUrl || item.product.images?.[0] || ''} alt={item.product.name} className="w-full h-full object-cover" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <h4 className="text-sm font-bold truncate">{item.product.name}</h4>

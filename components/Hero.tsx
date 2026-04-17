@@ -63,7 +63,7 @@ const Hero: React.FC<HeroProps> = ({ onExplore }) => {
         </span>
         <h1 
           className="font-display text-4xl md:text-7xl lg:text-8xl font-medium text-white leading-tight tracking-tight drop-shadow-2xl px-6"
-          dangerouslySetInnerHTML={{ __html: config?.heroTitle || 'LAVA INTERIOR' }}
+          dangerouslySetInnerHTML={{ __html: (config?.heroTitle || 'LAVA INTERIOR').replace(/text-black/g, 'text-primary') }}
         />
         <p 
           className="text-lg md:text-2xl text-white/90 font-light max-w-3xl mx-auto leading-relaxed font-body px-8 opacity-80"

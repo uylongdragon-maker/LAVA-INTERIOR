@@ -1,3 +1,4 @@
+"use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User } from 'firebase/auth';
@@ -38,7 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             localStorage.setItem('lava_admin_auth', 'true');
             return { success: true };
         }
-        return { success: false, message: 'Invalid credentials. Use admin / 123456' };
+        return { success: false, message: 'Sai tên đăng nhập hoặc mật khẩu.' };
     };
 
     const logout = async () => {

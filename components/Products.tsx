@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, onSnapshot, getDoc, doc } from 'firebase/firestore';
 import { initFirebase } from '../services/firebase';
-import { Category, Material, Product, ProductStatus } from '../types';
+import { Material, Product, ProductStatus, DEFAULT_CATEGORIES, SiteConfig } from '../types';
 import { PRODUCTS } from '../constants';
 import { useScrollReveal } from '../src/hooks/useScrollReveal';
 import { useCart } from '../src/contexts/CartContext';
@@ -9,43 +9,52 @@ import ProductDetailModal from './ProductDetailModal';
 
 const Products: React.FC = () => {
   const { addToCart } = useCart();
-  const [selectedCategory, setSelectedCategory] = useState<Category | 'Tất cả'>('Tất cả');
-  const [selectedMaterial, setSelectedMaterial] = useState<Material>(Material.Composite); // Default to Composite to show imported products
+  const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
+  const [selectedMaterial, setSelectedMaterial] = useState<Material>(Material.Composite);
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [categories, setCategories] = useState<string[]>(['Tất cả', ...DEFAULT_CATEGORIES]);
   const [loading, setLoading] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [config, setConfig] = useState<SiteConfig | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Calculate filtered products early to use in animations
   const filteredProducts = products.filter(p =>
     (selectedCategory === 'Tất cả' || p.category === selectedCategory) &&
     (p.material === selectedMaterial)
   );
 
-  // Trigger animations when filtered products change
   useScrollReveal(containerRef, filteredProducts);
 
   useEffect(() => {
     const firebase = initFirebase();
-    console.log("Firebase Init:", firebase ? "Success" : "Failed");
     if (!firebase) return;
-
     setLoading(true);
-    // Real-time listener for immediate updates when photos are uploaded
+
+    const fetchData = async () => {
+        try {
+            // 1. Fetch Categories
+            const configSnap = await getDoc(doc(firebase.db, 'site_config', 'main'));
+            if (configSnap.exists()) {
+                const configData = configSnap.data() as SiteConfig;
+                setConfig(configData);
+                if (configData.categories && configData.categories.length > 0) {
+                    setCategories(['Tất cả', ...configData.categories]);
+                }
+            }
+        } catch (e) { console.error("Error fetching categories", e); }
+    };
+    fetchData();
+
     const unsubscribe = onSnapshot(collection(firebase.db, 'products'), (snapshot) => {
-      console.log("Snapshot received. Docs:", snapshot.size);
       const fetchedProducts: Product[] = [];
       snapshot.forEach((doc) => {
         fetchedProducts.push({ id: doc.id, ...doc.data() } as Product);
       });
-      console.log("First fetched product:", fetchedProducts[0]);
-      console.log("Fetched Material (JSON):", JSON.stringify(fetchedProducts[0].material));
-      console.log("Selected Material (JSON):", JSON.stringify(selectedMaterial));
-      console.log("Direct Match:", fetchedProducts[0].material === selectedMaterial);
-      console.log("Trimmed Match:", fetchedProducts[0].material?.trim() === selectedMaterial?.trim());
-
-      // Combine dynamic products with static ones (dynamic first)
-      setProducts([...fetchedProducts, ...PRODUCTS]);
+      const combined = [...fetchedProducts];
+      PRODUCTS.forEach(p => {
+        if (!combined.find(cp => cp.id === p.id)) combined.push(p);
+      });
+      setProducts(combined);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching products:", error);
@@ -55,178 +64,157 @@ const Products: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
-  const categories = ['Tất cả', ...Object.values(Category)];
 
-  console.log("Current Products:", products.length);
-  console.log("Selected Material:", selectedMaterial);
-  console.log("Selected Category:", selectedCategory);
-
-
-
-  /**
-   * Generates a high-quality placeholder image using a service if the product image fails or is missing.
-   * Uses keywords to make the placeholders relevant.
-   */
-  const getPlaceholderUrl = (product: Product) => {
-    const query = encodeURIComponent(`${product.category} luxury furniture ${product.material}`);
-    return `https://placehold.co/600x800/1c6d3a/ffffff?text=${encodeURIComponent(product.name)}&font=playfair-display`;
-  };
 
   return (
-    <div ref={containerRef} className="max-w-[1440px] mx-auto flex flex-col px-6 lg:px-12 pb-20 w-full page-enter bg-white dark:bg-black text-black dark:text-white">
-      {/* Header Section - Chanel Minimalist */}
-      <section className="reveal flex flex-col md:flex-row justify-between items-end gap-6 py-16 md:py-24 border-b border-black/10 dark:border-white/10 mb-12">
+    <div ref={containerRef} className="max-w-[1440px] mx-auto px-6 md:px-12 pb-20 w-full page-enter bg-white dark:bg-black text-black dark:text-white">
+      {/* Editorial Header */}
+      <section className="reveal flex flex-col md:flex-row justify-between items-end gap-6 py-16 md:py-24 border-b border-black/5 dark:border-white/5 mb-16">
         <div className="flex flex-col gap-2">
-          <p className="text-black/60 dark:text-white/60 text-[10px] font-bold uppercase tracking-[0.3em]">Lava Interior</p>
-          <h1 className="text-5xl md:text-7xl font-display font-medium leading-none tracking-tight">
-            Product Collection
+          <p className="text-black/60 dark:text-white/60 text-[10px] font-bold uppercase tracking-[0.3em]">{config?.sectionTitleMaterials || 'Signature Collections'}</p>
+          <h1 className="text-5xl md:text-8xl font-display font-medium leading-none tracking-tighter">
+             Artisan Materiality
           </h1>
         </div>
 
-        {/* Minimal Text Tabs - No Backgrounds */}
+        {/* Material Switcher */}
         <div className="flex gap-8">
-          <button
-            onClick={() => setSelectedMaterial(Material.Cement)}
-            className={`pb-2 text-xs font-bold uppercase tracking-widest transition-all duration-300 ${selectedMaterial === Material.Cement ? 'text-black dark:text-white border-b border-black dark:border-white' : 'text-gray-400 hover:text-black dark:hover:text-white border-b border-transparent'}`}
-          >
-            Cement
-          </button>
-          <button
-            onClick={() => setSelectedMaterial(Material.Composite)}
-            className={`pb-2 text-xs font-bold uppercase tracking-widest transition-all duration-300 ${selectedMaterial === Material.Composite ? 'text-black dark:text-white border-b border-black dark:border-white' : 'text-gray-400 hover:text-black dark:hover:text-white border-b border-transparent'}`}
-          >
-            Composite
-          </button>
+          {Object.values(Material).map((m) => (
+            <button
+              key={m}
+              onClick={() => setSelectedMaterial(m)}
+              className={`pb-2 text-[10px] font-bold uppercase tracking-widest transition-all duration-300 ${selectedMaterial === m ? 'text-black dark:text-white border-b-2 border-black dark:border-white' : 'text-gray-400 hover:text-black dark:hover:text-white border-b-2 border-transparent'}`}
+            >
+              {m.split(' - ')[1] || m}
+            </button>
+          ))}
         </div>
       </section>
 
       <div className="flex flex-col lg:flex-row gap-16">
-        {/* Sidebar Filters - Minimal & Sharp */}
+        {/* Category Filter Sidebar */}
         <aside className="w-full lg:w-48 flex-shrink-0 space-y-12">
           <div className="lg:sticky lg:top-32 space-y-8">
             <div>
-              <h4 className="text-xs font-bold uppercase tracking-[0.2em] mb-6 text-black dark:text-white">Danh mục</h4>
+              <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-6 text-black/40 dark:text-white/40">Phân loại</h4>
               <div className="flex flex-col gap-4">
                 {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat as any)}
-                    className={`text-left text-sm font-display tracking-wide transition-all duration-300 ${selectedCategory === cat
+                    className={`text-left text-sm font-display tracking-tight transition-all duration-300 ${selectedCategory === cat
                       ? 'text-black dark:text-white font-bold italic translate-x-1'
-                      : 'text-gray-500 hover:text-black dark:hover:text-white'
+                      : 'text-gray-400 hover:text-black dark:hover:text-white'
                       }`}
                   >
-                    {cat}
+                    {cat.split(' - ')[0]}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Clean Box Newsletter - Sharp Black */}
-            <div className="bg-black dark:bg-white text-white dark:text-black p-6 space-y-4 shadow-none rounded-none">
-              <h4 className="font-display text-xl leading-tight">Join the<br />Legacy</h4>
-              <p className="text-[10px] uppercase tracking-wider opacity-70">Nhận thông tin ưu đãi</p>
-              <input
-                type="email"
-                placeholder="Email"
-                className="w-full bg-transparent border-b border-white/30 dark:border-black/30 py-2 text-xs focus:outline-none focus:border-white dark:focus:border-black placeholder:text-white/30 dark:placeholder:text-black/30"
-              />
-              <button className="text-[10px] font-bold uppercase tracking-[0.2em] hover:opacity-70 transition-opacity">Submit</button>
+            <div className="bg-[#1a1a1a] dark:bg-zinc-900 text-white p-6 space-y-4 rounded-sm">
+                <h4 className="text-sm font-bold uppercase tracking-widest opacity-80">Heritage</h4>
+                <p className="text-[11px] leading-relaxed font-light opacity-60">Khám phá câu chuyện đằng sau mỗi vật liệu thô mộc được chế tác thủ công.</p>
+                <button className="text-[9px] font-bold uppercase tracking-widest border-b border-white/30 hover:border-white transition-all pb-1">Xem chi tiết</button>
             </div>
           </div>
         </aside>
 
-        {/* Product Grid - Sharp, No Shadows, Minimal */}
+        {/* Product Grid */}
         <div className="flex-1">
-          {loading && (
+          {loading ? (
             <div className="flex justify-center py-20">
-              <div className="w-6 h-6 border-[3px] border-black/10 dark:border-white/10 border-t-black dark:border-t-white rounded-full animate-spin"></div>
+              <div className="w-6 h-6 border-2 border-black/10 dark:border-white/10 border-t-black dark:border-t-white rounded-full animate-spin"></div>
             </div>
-          )}
-
-          {!loading && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
-
-              {/* Editorial Block - Sharp & Clean but with 10px radius */}
-              <div className="group relative flex flex-col justify-end bg-gray-100 dark:bg-zinc-900 col-span-1 p-8 min-h-[450px] cursor-pointer overflow-hidden rounded-[10px]">
-                <div
-                  className="absolute inset-0 bg-cover bg-center transition-transform duration-[2000ms] group-hover:scale-105 opacity-80"
-                  style={{ backgroundImage: "url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=800')" }}
-                ></div>
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors"></div>
-                <div className="relative z-10 text-white mt-auto">
-                  <p className="text-[9px] font-bold uppercase tracking-widest mb-3 border-l-2 border-white pl-3">Artisan Focus</p>
-                  <h3 className="text-3xl font-display leading-tight mb-2">The Essence<br />of Stone</h3>
-                  <a className="inline-block text-[10px] font-bold uppercase tracking-[0.2em] border-b border-white/50 hover:border-white pb-1 transition-all" href="#">
-                    Discover
-                  </a>
-                </div>
-              </div>
-
-              {filteredProducts.map((product, idx) => (
-                <div
-                  key={product.id}
-                  onClick={() => setSelectedProduct(product)}
-                  className="reveal group cursor-pointer flex flex-col gap-4"
-                  style={{ transitionDelay: `${idx * 50}ms` }}
-                >
-                  {/* Image Container - 10px Radius */}
-                  <div className="relative w-full aspect-[3/4] overflow-hidden bg-gray-50 dark:bg-zinc-900 rounded-[10px]">
-                    <img
-                      src={product.imageUrl || getPlaceholderUrl(product)}
-                      alt={product.name}
-                      loading="lazy"
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    />
-
-                    {/* Minimal Badge - Sharp Rect */}
-                    {product.status === ProductStatus.OutOfStock && (
-                      <div className="absolute top-0 right-0 bg-black text-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest">
-                        Sold Out
+          ) : (
+            <>
+              {selectedCategory.includes('Material Texture') ? (
+                // Specialized Swatch Grid for Material Texture
+                <div className="space-y-16 animate-fade-in-up">
+                  {filteredProducts.map(product => (
+                    <div key={product.id} className="space-y-8">
+                      <div className="flex items-center gap-6">
+                        <div className="h-[1px] flex-1 bg-black/5 dark:bg-white/5"></div>
+                        <h3 className="text-xs font-bold uppercase tracking-[0.4em] opacity-40">{product.name}</h3>
+                        <div className="h-[1px] flex-1 bg-black/5 dark:bg-white/5"></div>
                       </div>
-                    )}
-                    {product.id === '1' && product.status !== ProductStatus.OutOfStock && (
-                      <div className="absolute top-0 left-0 bg-white text-black px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest border border-black/5">
-                        Best Seller
+                      <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-x-4 gap-y-10 focus:outline-none">
+                        {product.swatchGroups?.flatMap(g => g.swatches).map((swatch, sIdx) => (
+                          <div key={sIdx} className="group flex flex-col items-center gap-3">
+                            <div 
+                              className="size-16 sm:size-20 rounded-full border border-black/10 dark:border-white/10 overflow-hidden transition-all duration-500 hover:scale-110 cursor-pointer shadow-sm relative"
+                              title={swatch.name}
+                              onClick={() => setSelectedProduct(product)}
+                            >
+                               {swatch.image ? (
+                                   <img src={swatch.image} className="w-full h-full object-cover" alt={swatch.name} />
+                               ) : (
+                                   <div className="size-full" style={{ backgroundColor: swatch.color }} />
+                               )}
+                               <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                            <span className="text-[9px] font-bold uppercase tracking-tight text-center opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0 text-gray-400">
+                              {swatch.name || 'Sample'}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    )}
-
-                    {/* Hover Overlay - Minimal Tint */}
-                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-
-                    {/* Quick Add - Minimal Icon */}
-                    <button
-                      className="absolute bottom-4 right-4 size-10 flex items-center justify-center bg-white text-black hover:bg-black hover:text-white transition-all duration-300 opacity-0 group-hover:opacity-100"
-                      onClick={(e) => { e.stopPropagation(); addToCart(product); }}
-                    >
-                      <span className="material-symbols-outlined text-[20px]">add_shopping_cart</span>
-                    </button>
-                  </div>
-
-                  {/* Info - Clean Typography */}
-                  <div className="flex flex-col items-center text-center gap-1.5 px-2">
-                    <h3 className="text-lg font-display text-black dark:text-white group-hover:opacity-70 transition-opacity">
-                      {product.name}
-                    </h3>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="text-gray-500 uppercase tracking-widest text-[10px]">{product.category}</span>
-                      <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                      <span className="font-bold text-black dark:text-white">
-                        {product.price.toLocaleString('vi-VN')}đ
-                      </span>
                     </div>
-                  </div>
+                  ))}
+                  {filteredProducts.length === 0 && (
+                    <p className="text-center py-20 text-gray-400 italic">Hiện chưa có mẫu vân cho vật liệu này.</p>
+                  )}
                 </div>
-              ))}
-            </div>
+              ) : (
+                // Standard Product Grid
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-16">
+                  {filteredProducts.map((product, idx) => (
+                    <div
+                      key={product.id}
+                      onClick={() => setSelectedProduct(product)}
+                      className="reveal group cursor-pointer flex flex-col gap-6"
+                      style={{ transitionDelay: `${idx * 50}ms` }}
+                    >
+                      <div className="relative w-full aspect-[4/5] overflow-hidden bg-gray-50 dark:bg-zinc-900 rounded-sm">
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
+                          loading="lazy"
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+                        />
+                        
+                        {product.status === ProductStatus.OutOfStock && (
+                          <div className="absolute top-0 right-0 bg-black text-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest">
+                            Sold Out
+                          </div>
+                        )}
+                        
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500"></div>
+                      </div>
+
+                      <div className="flex flex-col items-center text-center gap-2">
+                        <h3 className="text-xl font-display text-gray-800 dark:text-gray-200 uppercase tracking-tight group-hover:opacity-70 transition-opacity">
+                          {product.name}
+                        </h3>
+                        <div className="flex items-center gap-3">
+                          <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em]">{product.category.split(' - ')[0]}</span>
+                          <span className="w-1 h-1 bg-gray-200 rounded-full"></span>
+                          <span className="text-sm font-medium text-black dark:text-white">
+                            {product.price.toLocaleString('vi-VN')}đ
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
           )}
 
-          {/* Load More - Clean Button */}
-          {!loading && (
-            <div className="mt-24 flex justify-center">
-              <button className="px-12 py-4 border border-black/10 dark:border-white/10 text-xs font-bold uppercase tracking-[0.2em] hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all duration-500">
-                View All Collection
-              </button>
+          {!loading && filteredProducts.length === 0 && (
+            <div className="py-20 text-center border-t border-dashed border-gray-100 dark:border-white/5">
+                <p className="font-display text-xl text-gray-400 italic">No products matched your selection.</p>
             </div>
           )}
         </div>

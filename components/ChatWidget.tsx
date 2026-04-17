@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { collection, addDoc, onSnapshot, query, orderBy, Timestamp, doc, setDoc } from 'firebase/firestore';
 import { initFirebase } from '../services/firebase';
 import { ChatMessage, ChatSession } from '../types';
@@ -12,7 +12,7 @@ const ChatWidget: React.FC = () => {
     const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
     const [inputText, setInputText] = useState('');
     const chatEndRef = useRef<HTMLDivElement>(null);
-    const firebase = initFirebase();
+    const firebase = useMemo(() => initFirebase(), []);
 
     useEffect(() => {
         if (!activeSessionId || !firebase) return;
@@ -24,7 +24,7 @@ const ChatWidget: React.FC = () => {
             const msgs: ChatMessage[] = [];
             snapshot.forEach((doc) => msgs.push({ id: doc.id, ...doc.data() } as ChatMessage));
             setMessages(msgs);
-            scrollToBottom();
+            setTimeout(() => scrollToBottom(), 100);
         });
         return () => unsubscribe();
     }, [activeSessionId]);

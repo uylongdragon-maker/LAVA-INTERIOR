@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { collection, onSnapshot, query, orderBy, addDoc, Timestamp, doc, updateDoc, getDocs } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { ChatSession, ChatMessage } from '../../../types';
@@ -11,7 +11,7 @@ const ChatManager: React.FC = () => {
     const [replyText, setReplyText] = useState('');
     const [loading, setLoading] = useState(true);
     const chatEndRef = useRef<HTMLDivElement>(null);
-    const firebase = initFirebase();
+    const firebase = useMemo(() => initFirebase(), []);
 
     useEffect(() => {
         if (!firebase) return;
@@ -123,7 +123,7 @@ const ChatManager: React.FC = () => {
                             <div className="text-[10px] opacity-70 truncate mb-2">{s.phone}</div>
                             <div className="flex justify-between items-center">
                                 <span className="text-[9px] font-mono group-hover:text-primary transition-colors">{s.csCode}</span>
-                                <span className="text-[9px] italic opacity-50">{new Date(s.createdAt?.toDate()).toLocaleDateString()}</span>
+                                <span className="text-[9px] italic opacity-50">{s.createdAt?.toDate ? new Date(s.createdAt.toDate()).toLocaleDateString() : ''}</span>
                             </div>
                         </button>
                     ))}
@@ -183,7 +183,7 @@ const ChatManager: React.FC = () => {
                                         {m.text}
                                     </div>
                                     <span className="text-[9px] text-gray-400 mt-1 uppercase font-bold tracking-widest px-1">
-                                        {m.sender.toUpperCase()} • {m.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {m.sender.toUpperCase()} • {m.timestamp?.toDate ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                                     </span>
                                 </div>
                             ))}

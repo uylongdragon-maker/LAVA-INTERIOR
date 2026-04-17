@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { collection, getDocs, addDoc, deleteDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { collection, getDocs, getDoc, addDoc, deleteDoc, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { uploadToCloudinary } from '../../../services/cloudinary';
-import { Product, Category, Material, ProductStatus } from '../../../types';
+import { Product, Material, ProductStatus, DEFAULT_CATEGORIES, SiteConfig } from '../../../types';
 import ImageCropper from './ImageCropper';
 import ReactQuill from 'react-quill-new';
 import 'react-quill-new/dist/quill.snow.css';
@@ -17,8 +17,9 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
     // Form State
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
-    const [category, setCategory] = useState<Category>(Category.TableSet);
+    const [category, setCategory] = useState<string>('');
     const [material, setMaterial] = useState<Material>(Material.Cement);
+    const [categories, setCategories] = useState<string[]>([]);
     const [description, setDescription] = useState('');
     const [stock, setStock] = useState('1');
     const [sku, setSku] = useState('');
@@ -29,8 +30,10 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
     const [croppedBlob, setCroppedBlob] = useState<Blob | null>(null);
     const [editingId, setEditingId] = useState<string | null>(null);
     const [existingImageUrl, setExistingImageUrl] = useState<string>('');
+    const [swatchGroups, setSwatchGroups] = useState<any[]>([]);
+    const [uploadingSwatch, setUploadingSwatch] = useState<string | null>(null); // Track which swatch is uploading
 
-    const firebase = initFirebase();
+    const firebase = useMemo(() => initFirebase(), []);
 
     const fetchProducts = async () => {
         if (!firebase) {
@@ -39,6 +42,19 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
         }
         setLoading(true);
         try {
+            // 1. Fetch Categories first
+            const configSnap = await getDoc(doc(firebase.db, 'site_config', 'main'));
+            let currentCategories = DEFAULT_CATEGORIES;
+            if (configSnap.exists()) {
+                const config = configSnap.data() as SiteConfig;
+                if (config.categories && config.categories.length > 0) {
+                    currentCategories = config.categories;
+                }
+            }
+            setCategories(currentCategories);
+            if (!category) setCategory(currentCategories[0]);
+
+            // 2. Fetch Products
             const querySnapshot = await getDocs(collection(firebase.db, 'products'));
             const fetchedProducts: Product[] = [];
             querySnapshot.forEach((doc) => {
@@ -56,21 +72,12 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
         fetchProducts();
     }, []);
 
-    // Smart SKU Generation
-    useEffect(() => {
-        if (name && category) {
-            const categoryCode = category.substring(0, 3).toUpperCase();
-            const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-            // Only auto-generate if SKU is empty or seems auto-generated
-            if (!sku || sku.startsWith('LAVA-')) {
-                // setSku(`LAVA-${categoryCode}-${randomSuffix}`);
-            }
-        }
-    }, [name, category]);
+    // SKU auto-generation is manual — use generateSmartSku button instead
 
     const generateSmartSku = () => {
-        const categoryCode = category.substring(0, 3).toUpperCase();
-        const shortName = name.split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 3);
+        const removeAccents = (str: string) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        const categoryCode = removeAccents(category).split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 3);
+        const shortName = removeAccents(name).split(' ').map(w => w[0]).join('').toUpperCase().substring(0, 3);
         const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
         setSku(`LAVA-${categoryCode}-${shortName}-${randomSuffix}`);
     };
@@ -118,6 +125,7 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
         setImageFile(null);
         setCroppedBlob(null);
         setTempImgSrc(null);
+        setSwatchGroups(product.swatchGroups || []);
         // Scroll to form
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -153,6 +161,7 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                 sku,
                 status,
                 imageUrl,
+                swatchGroups,
             };
 
             if (isEditing) {
@@ -192,6 +201,7 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
         setImageFile(null);
         setCroppedBlob(null);
         setTempImgSrc(null);
+        setSwatchGroups([]);
     };
 
     const handleDelete = async (id: string) => {
@@ -215,6 +225,53 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
             ['link', 'image'],
             ['clean']
         ],
+    };
+
+    const addSwatchGroup = () => {
+        setSwatchGroups([...swatchGroups, { title: 'New Group', swatches: [] }]);
+    };
+
+    const updateGroupName = (index: number, name: string) => {
+        const newGroups = [...swatchGroups];
+        newGroups[index].title = name;
+        setSwatchGroups(newGroups);
+    };
+
+    const removeSwatchGroup = (index: number) => {
+        setSwatchGroups(swatchGroups.filter((_, i) => i !== index));
+    };
+
+    const addSwatch = (groupIndex: number) => {
+        const newGroups = [...swatchGroups];
+        newGroups[groupIndex].swatches.push({ name: '', color: '#000000', image: '' });
+        setSwatchGroups(newGroups);
+    };
+
+    const updateSwatch = (groupIndex: number, swatchIndex: number, field: string, value: string) => {
+        const newGroups = [...swatchGroups];
+        newGroups[groupIndex].swatches[swatchIndex][field] = value;
+        setSwatchGroups(newGroups);
+    };
+
+    const removeSwatch = (groupIndex: number, swatchIndex: number) => {
+        const newGroups = [...swatchGroups];
+        newGroups[groupIndex].swatches = newGroups[groupIndex].swatches.filter((_: any, i: number) => i !== swatchIndex);
+        setSwatchGroups(newGroups);
+    };
+
+    const handleSwatchImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, groupIndex: number, swatchIndex: number) => {
+        if (e.target.files && e.target.files[0]) {
+            const swatchId = `${groupIndex}-${swatchIndex}`;
+            setUploadingSwatch(swatchId);
+            try {
+                const url = await uploadToCloudinary(e.target.files[0]);
+                updateSwatch(groupIndex, swatchIndex, 'image', url);
+            } catch (error) {
+                console.error("Swatch upload error", error);
+            } finally {
+                setUploadingSwatch(null);
+            }
+        }
     };
 
     return (
@@ -321,10 +378,10 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                                 <div className="relative">
                                     <select
                                         value={category}
-                                        onChange={e => setCategory(e.target.value as Category)}
+                                        onChange={e => setCategory(e.target.value)}
                                         className="w-full p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-black/20 dark:text-white appearance-none focus:outline-none focus:ring-2 focus:ring-primary/50"
                                     >
-                                        {Object.values(Category).map(c => <option key={c} value={c}>{c}</option>)}
+                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                     <span className="absolute right-4 top-3.5 pointer-events-none material-symbols-outlined text-gray-500">expand_more</span>
                                 </div>
@@ -387,6 +444,104 @@ const ProductManager: React.FC<ProductManagerProps> = () => {
                                 modules={quillModules}
                                 className="bg-white dark:bg-black/20 dark:text-white rounded-xl overflow-hidden"
                             />
+                        </div>
+
+                        {/* Catalogue Swatches */}
+                        <div className="pt-6 border-t border-gray-100 dark:border-white/10">
+                            <div className="flex justify-between items-center mb-6">
+                                <h4 className="font-bold dark:text-white flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary">palette</span>
+                                    Catalogue Swatches (Material Patterns)
+                                </h4>
+                                <button
+                                    type="button"
+                                    onClick={addSwatchGroup}
+                                    className="text-xs font-bold text-primary hover:underline flex items-center gap-1"
+                                >
+                                    <span className="material-symbols-outlined text-sm">add</span> Add Group
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                {swatchGroups.map((group, gIdx) => (
+                                    <div key={gIdx} className="p-4 bg-gray-50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-white/5 space-y-4">
+                                        <div className="flex gap-4 items-center">
+                                            <input
+                                                type="text"
+                                                value={group.title}
+                                                onChange={(e) => updateGroupName(gIdx, e.target.value)}
+                                                placeholder="Group Title (e.g. Marble Patterns)"
+                                                className="flex-1 bg-transparent border-b border-gray-300 dark:border-white/20 pb-1 font-bold text-sm focus:outline-none focus:border-primary"
+                                            />
+                                            <button type="button" onClick={() => removeSwatchGroup(gIdx)} className="text-red-400 hover:text-red-600">
+                                                <span className="material-symbols-outlined text-lg">delete</span>
+                                            </button>
+                                        </div>
+
+                                        <div className="flex flex-wrap gap-4">
+                                            {group.swatches.map((swatch: any, sIdx: number) => (
+                                                <div key={sIdx} className="relative group/swatch bg-white dark:bg-[#1a261f] p-3 rounded-lg shadow-sm border border-gray-100 dark:border-white/10 flex flex-col items-center gap-2">
+                                                    <div className="relative size-12 rounded-full border border-gray-200 dark:border-white/20 overflow-hidden flex items-center justify-center bg-gray-50">
+                                                       {swatch.image ? (
+                                                           <img src={swatch.image} className="w-full h-full object-cover" />
+                                                       ) : (
+                                                           <div className="size-full" style={{ backgroundColor: swatch.color }} />
+                                                       )}
+                                                       <button 
+                                                         type="button"
+                                                         onClick={() => document.getElementById(`swatch-img-${gIdx}-${sIdx}`)?.click()}
+                                                         className="absolute inset-0 bg-black/40 opacity-0 group-hover/swatch:opacity-100 transition-opacity flex items-center justify-center text-white"
+                                                       >
+                                                          <span className="material-symbols-outlined text-sm">upload</span>
+                                                       </button>
+                                                       <input 
+                                                          id={`swatch-img-${gIdx}-${sIdx}`}
+                                                          type="file" 
+                                                          className="hidden" 
+                                                          onChange={(e) => handleSwatchImageUpload(e, gIdx, sIdx)}
+                                                       />
+                                                       {uploadingSwatch === `${gIdx}-${sIdx}` && (
+                                                           <div className="absolute inset-0 bg-white/80 dark:bg-black/80 flex items-center justify-center">
+                                                              <span className="material-symbols-outlined animate-spin text-primary text-sm">progress_activity</span>
+                                                           </div>
+                                                       )}
+                                                    </div>
+                                                    <input 
+                                                        type="text"
+                                                        value={swatch.name || ''}
+                                                        onChange={(e) => updateSwatch(gIdx, sIdx, 'name', e.target.value)}
+                                                        placeholder="Name"
+                                                        className="w-16 text-[8px] text-center bg-transparent border-none focus:outline-none dark:text-white"
+                                                    />
+                                                    <input 
+                                                        type="color"
+                                                        value={swatch.color || '#000000'}
+                                                        onChange={(e) => updateSwatch(gIdx, sIdx, 'color', e.target.value)}
+                                                        className="size-4 rounded-full border-none cursor-pointer"
+                                                    />
+                                                    <button 
+                                                        type="button" 
+                                                        onClick={() => removeSwatch(gIdx, sIdx)}
+                                                        className="absolute -top-2 -right-2 size-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover/swatch:opacity-100 transition-opacity"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[10px]">close</span>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                            <button 
+                                                type="button"
+                                                onClick={() => addSwatch(gIdx)}
+                                                className="size-12 rounded-full border-2 border-dashed border-gray-300 dark:border-white/20 flex items-center justify-center text-gray-400 hover:border-primary hover:text-primary transition-colors"
+                                            >
+                                                <span className="material-symbols-outlined">add</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {swatchGroups.length === 0 && (
+                                    <p className="text-xs text-center text-gray-400 italic">No swatch groups added yet.</p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="pt-4 border-t border-gray-100 dark:border-white/10 flex justify-end gap-3">

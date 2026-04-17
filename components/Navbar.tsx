@@ -1,6 +1,7 @@
-
+"use client";
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { initFirebase } from '../services/firebase';
 import { SiteConfig } from '../types';
@@ -15,8 +16,8 @@ const NAV_ITEMS = [
 import { useCart } from '../src/contexts/CartContext';
 
 const Navbar: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const router = useRouter();
+  const pathname = usePathname();
   const { cartItems, totalCount } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isDark, setIsDark] = useState(false);
@@ -49,7 +50,7 @@ const Navbar: React.FC = () => {
     fetchConfig();
   }, []);
 
-  const currentPath = location.pathname === '/' ? '/' : location.pathname;
+  const currentPath = pathname === '/' ? '/' : pathname;
 
   useEffect(() => {
     const saved = localStorage.getItem('lava-dark-mode');
@@ -75,11 +76,11 @@ const Navbar: React.FC = () => {
   };
 
   const handleNavigate = (path: string) => {
-    navigate(path);
+    router.push(path);
     setIsMenuOpen(false);
   };
 
-  const isHome = location.pathname === '/';
+  const isHome = pathname === '/';
 
   return (
     <>
@@ -91,11 +92,7 @@ const Navbar: React.FC = () => {
       >
         <div className="px-6 md:px-12 py-5 max-w-[1440px] mx-auto flex items-center justify-between">
           {/* Logo */}
-          <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); handleNavigate('/'); }}
-            className="flex items-center gap-3 group"
-          >
+          <Link href="/" className="flex items-center gap-2 group">
             {config?.logo ? (
               <img src={config.logo} alt="Lava Interior" className="h-10 w-auto object-contain" />
             ) : (
@@ -109,7 +106,7 @@ const Navbar: React.FC = () => {
             <h1 className={`text-2xl font-display font-bold tracking-tight transition-colors duration-300 ${isScrolled || !isHome ? 'text-primary-dark dark:text-primary' : 'text-white'}`}>
               {config?.siteName || 'Lava Interior'}
             </h1>
-          </a>
+          </Link>
 
           {/* Desktop Links */}
           <div className="hidden lg:flex items-center gap-8">
@@ -134,7 +131,7 @@ const Navbar: React.FC = () => {
               <span className="material-symbols-outlined text-[22px]">search</span>
             </button>
             <button 
-              onClick={() => handleNavigate('/cart')}
+              onClick={() => router.push('/cart')}
               className={`p-2 rounded-full transition-colors relative ${(isScrolled || !isHome) ? 'hover:bg-primary/5 text-gray-700 dark:text-white' : 'hover:bg-white/10 text-white'}`}
             >
               <span className="material-symbols-outlined text-[22px]">shopping_bag</span>

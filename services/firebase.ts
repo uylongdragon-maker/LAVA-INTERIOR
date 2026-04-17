@@ -4,13 +4,13 @@ import { getAnalytics, Analytics } from 'firebase/analytics';
 import { getFirestore, collection, addDoc, deleteDoc, doc, getDoc, Timestamp, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY || '',
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || '',
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || '',
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || '',
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '',
-    appId: import.meta.env.VITE_FIREBASE_APP_ID || '',
-    measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || '',
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || '',
 };
 
 // Lazy initialization
@@ -28,7 +28,7 @@ const isConfigured = (): boolean => {
 };
 
 export const initFirebase = () => {
-    if (app) return { db: db!, app, analytics };
+    if (app && db) return { db, app, analytics };
     if (!isConfigured()) {
         console.warn('Firebase credentials not configured. Using localStorage fallback.');
         return null;
@@ -183,7 +183,7 @@ export const createOrder = async (order: Omit<Order, 'id'>) => {
     if (!firebase) {
         // Fallback to localStorage for demo
         const orders = JSON.parse(localStorage.getItem('lava_orders') || '[]');
-        const newOrder = { ...order, id: 'LAVA-' + Math.random().toString(36).substr(2, 9).toUpperCase() };
+        const newOrder = { ...order, id: 'LAVA-' + Math.random().toString(36).substring(2, 11).toUpperCase() };
         orders.push(newOrder);
         localStorage.setItem('lava_orders', JSON.stringify(orders));
         return { id: newOrder.id };

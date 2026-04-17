@@ -1,14 +1,19 @@
 
-export enum Category {
-  TableSet = 'Bộ Bàn Ghế',
-  PlantPot = 'Chậu Cây',
-  Decoration = 'Trang Trí',
-  Others = 'Khác'
-}
+// Category is now dynamic, but we keep the initial defaults as reference or fallback
+export const DEFAULT_CATEGORIES = [
+  'Bàn trà - Coffee Table',
+  'Bàn ăn - Dining Table',
+  'Ghế - Seat/Stool',
+  'Chậu cây - Planter',
+  'Trang trí - Decor',
+  'Material Texture',
+  'Khác - Others'
+];
 
 export enum Material {
-  Cement = 'Xi măng - Cement',
-  Composite = 'Composite'
+  Cement = 'Bê tông - Cement',
+  Composite = 'Sơn mài - Lacquer/Composite',
+  Terrazzo = 'Đá mài - Terrazzo'
 }
 
 export enum ProductStatus {
@@ -20,15 +25,27 @@ export enum ProductStatus {
 export interface Product {
   id: string;
   name: string;
-  category: Category;
+  category: string;
   material: Material;
   price: number;
-  imageUrl: string; // Legacy
-  images: string[]; // Support for multiple images
+  imageUrl: string; // Featured Image
+  images: string[]; // Variations/Gallery
   description: string;
   stock: number;
   sku: string;
   status: ProductStatus;
+  swatchGroups?: SwatchGroup[]; // For Catalogue Display
+}
+
+export interface SwatchGroup {
+  title: string; // e.g. "Marble Patterns", "Lacquer Colors"
+  swatches: SwatchItem[];
+}
+
+export interface SwatchItem {
+  name?: string;
+  color?: string; // Optional hex
+  image: string; // URL to texture clip
 }
 
 
@@ -85,8 +102,44 @@ export interface SiteConfig {
   homeIntro: HomeIntro;
 
   // Contact Page
-  showrooms: Showroom[];
-  contactPage: ContactPageConfig;
+  // Dynamic Product Management
+  categories?: string[];
+  
+  // Catalogue Modal Layout
+  modalLayout?: {
+    headerTitle: string;
+    showLogo: boolean;
+    primaryColor?: string;
+  };
+}
+
+export interface ClientSectionConfig {
+  title: string;
+  subtitle: string;
+  desc: string;
+  logos: string[];
+  exhibitionImages: string[];
+  bottomTitle: string;
+  bottomDesc: string;
+}
+
+export interface CompanySectionConfig {
+  factoryImg: string;
+  factoryTitle: string;
+  factoryDesc: string;
+  
+  sprayImg: string;
+  sprayTitle: string;
+  sprayDesc: string;
+  
+  centerTitle: string;
+  centerDesc: string;
+  
+  features: {
+    img: string;
+    title: string;
+    desc: string;
+  }[];
 }
 
 export interface CoreValue {

@@ -33,10 +33,7 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ products, orders 
                             </h3>
                         </div>
                     </div>
-                    <div className="text-xs text-green-600 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">trending_up</span>
-                        <span>+12.5% from last month</span>
-                    </div>
+                    {/* Removed hardcoded percentage */}
                 </div>
 
                 {/* Orders Card */}
@@ -78,21 +75,21 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({ products, orders 
             <div className="bg-white dark:bg-[#1a261f] p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-[#2a4032]">
                 <h3 className="font-bold text-lg mb-4 text-[#101913] dark:text-white">{t('recent_activity')}</h3>
                 <ul className="space-y-4">
-                    <li className="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">New order #1023 received from <strong>Nguyen Van A</strong></p>
-                        <span className="ml-auto text-xs text-gray-400">2 mins ago</span>
-                    </li>
-                    <li className="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-white/5">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">Stock updated for <strong>Cement Plant Pot XL</strong></p>
-                        <span className="ml-auto text-xs text-gray-400">1 hour ago</span>
-                    </li>
-                    <li className="flex items-center gap-4">
-                        <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">System backup completed successfully</p>
-                        <span className="ml-auto text-xs text-gray-400">3 hours ago</span>
-                    </li>
+                    {orders.length > 0 ? (
+                        orders.slice(0, 5).map(order => (
+                            <li key={order.id} className="flex items-center gap-4 pb-4 border-b border-gray-100 dark:border-white/5 last:border-0 last:pb-0">
+                                <div className={`w-2 h-2 rounded-full ${order.status === OrderStatus.Pending ? 'bg-orange-500' : 'bg-green-500'}`}></div>
+                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                    Đơn hàng <strong>#{order.id}</strong> từ <strong>{order.customerName}</strong>
+                                </p>
+                                <span className="ml-auto text-xs text-gray-400">
+                                    {order.createdAt?.toDate ? order.createdAt.toDate().toLocaleDateString() : ''}
+                                </span>
+                            </li>
+                        ))
+                    ) : (
+                        <li className="text-sm text-gray-500 italic">Chưa có hoạt động nào.</li>
+                    )}
                 </ul>
             </div>
         </div>

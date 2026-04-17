@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, Timestamp } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { BlogPost } from '../../../types';
@@ -22,7 +22,7 @@ const BlogManager: React.FC = () => {
     const [imageUrl, setImageUrl] = useState('');
     const [status, setStatus] = useState<'draft' | 'published'>('published');
 
-    const firebase = initFirebase();
+    const firebase = useMemo(() => initFirebase(), []);
 
     useEffect(() => {
         fetchPosts();
@@ -38,7 +38,7 @@ const BlogManager: React.FC = () => {
                 fetchedPosts.push({ id: doc.id, ...doc.data() } as BlogPost);
             });
             // Sort by date desc
-            fetchedPosts.sort((a, b) => b.createdAt.seconds - a.createdAt.seconds);
+            fetchedPosts.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
             setPosts(fetchedPosts);
         } catch (error) {
             console.error("Error fetching posts:", error);

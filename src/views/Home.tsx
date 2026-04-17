@@ -1,15 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import Hero from '../../components/Hero';
 import HydrographicTech from '../../components/HydrographicTech';
 import { doc, getDoc } from 'firebase/firestore';
 import { initFirebase } from '../../services/firebase';
 import { SiteConfig, HomeCollectionItem, HomeStat, HomeIntro } from '../../types';
-import ChatWidget from '../../components/ChatWidget';
 
 const Home: React.FC = () => {
-    const navigate = useNavigate();
+    const router = useRouter();
     const [config, setConfig] = useState<SiteConfig | null>(null);
 
     useEffect(() => {
@@ -26,14 +25,13 @@ const Home: React.FC = () => {
 
     return (
         <div className="page-enter">
-            <Hero onExplore={() => navigate('/products')} />
+            <Hero onExplore={() => router.push('/products')} />
             <HydrographicTech />
             <FeaturedCategories collections={config?.homeCollections || []} />
             <LegacySection
                 intro={config?.homeIntro}
                 stats={config?.homeStats || []}
             />
-            <ChatWidget />
         </div>
     );
 };
@@ -114,7 +112,7 @@ const LegacySection: React.FC<{ intro?: HomeIntro, stats: HomeStat[] }> = ({ int
                     </h2>
                     <h3
                         className="font-display text-6xl md:text-7xl font-light text-primary dark:text-primary leading-tight"
-                        dangerouslySetInnerHTML={{ __html: intro?.title || 'Lava Interior: <br /><span class="italic font-normal text-black dark:text-white">Nghệ Thuật Sống</span>' }}
+                        dangerouslySetInnerHTML={{ __html: intro?.title || 'Lava Interior: <br /><span class="italic font-normal text-primary">Nghệ Thuật Sống</span>' }}
                     />
                     <p className="text-gray-600 dark:text-gray-300 leading-relaxed font-body text-xl font-light">
                         {intro?.desc || 'Chúng tôi không chỉ kiến tạo nội thất, chúng tôi xây dựng những giấc mơ. Kết hợp chất liệu xi măng mài truyền thống với công nghệ AI đột phá, mỗi sản phẩm của Lava là một bản giao hưởng giữa thiên nhiên và kiến trúc hiện đại.'}

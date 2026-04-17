@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
 import { initFirebase } from '../../../services/firebase';
 import { PromotionCode } from '../../../types';
@@ -15,7 +15,7 @@ const PromotionManager: React.FC = () => {
         isActive: true
     });
     
-    const firebase = initFirebase();
+    const firebase = useMemo(() => initFirebase(), []);
 
     const fetchCodes = async () => {
         if (!firebase) return;
@@ -158,7 +158,7 @@ const PromotionManager: React.FC = () => {
                                         onClick={() => toggleStatus(c.id, c.isActive)}
                                         className={`px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors ${c.isActive ? 'bg-green-100 text-green-700 border-green-200' : 'bg-gray-100 text-gray-500 border-gray-200 dark:bg-zinc-800 dark:border-zinc-700'}`}
                                     >
-                                        {c.isActive ? 'Đăng hoạt động' : 'Tạm dừng'}
+                                        {c.isActive ? 'Đang hoạt động' : 'Tạm dừng'}
                                     </button>
                                 </td>
                                 <td className="py-4 text-right pr-2">

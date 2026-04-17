@@ -1,4 +1,5 @@
 
+"use client";
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem, Product } from '../../types';
 

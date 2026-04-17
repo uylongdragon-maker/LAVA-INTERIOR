@@ -2,35 +2,9 @@
 import React, { ReactNode } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAdminLang } from '../../contexts/AdminLanguageContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 
-interface AdminLayoutProps {
-    children: ReactNode;
-}
-
-const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
-    const { logout, user } = useAuth();
-    const { language, setLanguage, t } = useAdminLang();
-    const navigate = useNavigate();
-    const location = useLocation();
-
-    // Derive active tab from URL query param or state mapping if possible, 
-    // but since we are using a single page dashboard with local state tabs for now, 
-    // we will handle active state in the link styling based on the props passed or context context.
-    // Actually, for this implementation, the parent Dashboard manages the 'tab' state. 
-    // So the Layout just provides the shell. 
-    // To make it professional, the Sidebar should probably control the tab switching via a prop or context.
-    // Let's assume the parent passes the setActiveTab function or we lift the state up.
-    // FOR NOW, we will accept `activeTab` and `setActiveTab` as props? 
-    // No, let's keep it simple: The `AdminLayout` will just render the Sidebar visually.
-    // It's better if `AdminLayout` accepts `activeTab` and `onTabChange`.
-
-    return <>{children}</>;
-    // Wait, I need to wrap the whole sidebar logic here. 
-    // I will refactor `AdminLayout` to be a controlled component.
-};
-
-// Re-defining for correct usage
+// Controlled shell component for Admin Dashboard
 interface AdminShellProps {
     children: ReactNode;
     activeTab: string;
@@ -40,7 +14,7 @@ interface AdminShellProps {
 export const AdminShell: React.FC<AdminShellProps> = ({ children, activeTab, onTabChange }) => {
     const { logout, user } = useAuth();
     const { language, setLanguage, t } = useAdminLang();
-    const navigate = useNavigate();
+    const router = useRouter();
 
     const menuItems = [
         { id: 'overview', label: t('dashboard'), icon: 'dashboard' },
@@ -55,7 +29,7 @@ export const AdminShell: React.FC<AdminShellProps> = ({ children, activeTab, onT
 
     const handleLogout = async () => {
         await logout();
-        navigate('/admin/login');
+        router.push('/admin/login');
     };
 
     return (
