@@ -111,6 +111,10 @@ export interface SiteConfig {
     showLogo: boolean;
     primaryColor?: string;
   };
+
+  // Additional Sections (About Page etc.)
+  companySection?: CompanySectionConfig;
+  clientSection?: ClientSectionConfig;
 }
 
 export interface ClientSectionConfig {
