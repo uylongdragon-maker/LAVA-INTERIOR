@@ -51,7 +51,8 @@ const ContentManager: React.FC = () => {
         modalLayout: {
             headerTitle: 'LACQUER & CEMENT',
             showLogo: true
-        }
+        },
+        siteName: ''
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -82,6 +83,7 @@ const ContentManager: React.FC = () => {
                         socialFacebook: '#',
                         socialInstagram: '#',
                         sectionTitleMaterials: 'Thư viện vật liệu',
+                        siteName: 'LAVA INTERIOR CO., LTD'
                     });
                 }
             } catch (error) {
@@ -164,6 +166,13 @@ const ContentManager: React.FC = () => {
                                 <label className="block text-sm font-medium mb-1 dark:text-gray-300">Hero Title</label>
                                 <input
                                     type="text" name="heroTitle" value={config.heroTitle} onChange={handleChange}
+                                    className="w-full p-2 rounded border dark:bg-black/20 dark:border-white/10 dark:text-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-1 dark:text-gray-300">Site Name (Footer)</label>
+                                <input
+                                    type="text" name="siteName" value={config.siteName} onChange={handleChange}
                                     className="w-full p-2 rounded border dark:bg-black/20 dark:border-white/10 dark:text-white"
                                 />
                             </div>

@@ -117,6 +117,7 @@ export interface SiteConfig {
   clientSection?: ClientSectionConfig;
   showrooms?: Showroom[];
   contactPage?: ContactPageConfig;
+  siteName?: string;
 }
 
 export interface ClientSectionConfig {
