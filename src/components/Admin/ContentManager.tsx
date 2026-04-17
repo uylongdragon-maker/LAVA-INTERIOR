@@ -83,7 +83,13 @@ const ContentManager: React.FC = () => {
                         socialFacebook: '#',
                         socialInstagram: '#',
                         sectionTitleMaterials: 'Thư viện vật liệu',
-                        siteName: 'LAVA INTERIOR CO., LTD'
+                        siteName: 'LAVA INTERIOR CO., LTD',
+                        values: [],
+                        milestones: [],
+                        team: [],
+                        homeCollections: [],
+                        homeStats: [],
+                        homeIntro: { title: '', subtitle: '', desc: '', images: [] }
                     });
                 }
             } catch (error) {
