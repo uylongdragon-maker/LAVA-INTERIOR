@@ -115,6 +115,8 @@ export interface SiteConfig {
   // Additional Sections (About Page etc.)
   companySection?: CompanySectionConfig;
   clientSection?: ClientSectionConfig;
+  showrooms?: Showroom[];
+  contactPage?: ContactPageConfig;
 }
 
 export interface ClientSectionConfig {
