@@ -34,21 +34,27 @@ const DashboardContent: React.FC = () => {
     // Fetch data for overview
     useEffect(() => {
         const fetchData = async () => {
-            const firebase = initFirebase();
-            if (!firebase) return;
+            try {
+                const firebase = initFirebase();
+                if (!firebase) {
+                    console.error("Dashboard: Firebase not initialized. Check your environment variables.");
+                    return;
+                }
 
-            // Products
-            const pSnap = await getDocs(collection(firebase.db, 'products'));
-            const fetchedProducts: Product[] = [];
-            pSnap.forEach((doc) => fetchedProducts.push({ id: doc.id, ...doc.data() } as Product));
-            // Use only Firebase products; do NOT merge static PRODUCTS (causes duplicates)
-            setProducts(fetchedProducts);
+                // Products
+                const pSnap = await getDocs(collection(firebase.db, 'products'));
+                const fetchedProducts: Product[] = [];
+                pSnap.forEach((doc) => fetchedProducts.push({ id: doc.id, ...doc.data() } as Product));
+                setProducts(fetchedProducts);
 
-            // Orders
-            const oSnap = await getDocs(collection(firebase.db, 'orders'));
-            const fetchedOrders: Order[] = [];
-            oSnap.forEach((doc) => fetchedOrders.push({ id: doc.id, ...doc.data() } as Order));
-            setOrders(fetchedOrders);
+                // Orders
+                const oSnap = await getDocs(collection(firebase.db, 'orders'));
+                const fetchedOrders: Order[] = [];
+                oSnap.forEach((doc) => fetchedOrders.push({ id: doc.id, ...doc.data() } as Order));
+                setOrders(fetchedOrders);
+            } catch (error) {
+                console.error("Dashboard: Error fetching dashboard data:", error);
+            }
         };
         fetchData();
     }, []);

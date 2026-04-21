@@ -19,15 +19,20 @@ let db: Firestore | null = null;
 let analytics: Analytics | null = null;
 
 const isConfigured = (): boolean => {
-    return !!(
-        firebaseConfig.apiKey &&
-        firebaseConfig.apiKey !== 'YOUR_FIREBASE_API_KEY' &&
-        firebaseConfig.projectId &&
-        firebaseConfig.projectId !== 'YOUR_FIREBASE_PROJECT_ID'
-    );
+    const requiredKeys = ['apiKey', 'projectId', 'authDomain'];
+    const missing = requiredKeys.filter(key => !firebaseConfig[key as keyof typeof firebaseConfig] || firebaseConfig[key as keyof typeof firebaseConfig] === `YOUR_FIREBASE_${key.toUpperCase()}`);
+    
+    if (missing.length > 0) {
+        if (typeof window !== 'undefined') {
+            console.warn(`Firebase is not fully configured. Missing: ${missing.join(', ')}. Falling back to local storage.`);
+        }
+        return false;
+    }
+    return true;
 };
 
 export const initFirebase = () => {
+    if (typeof window === 'undefined') return null; // Prevent server-side initialization in static export if not needed
     if (app && db) return { db, app, analytics };
     if (!isConfigured()) {
         console.warn('Firebase credentials not configured. Using localStorage fallback.');

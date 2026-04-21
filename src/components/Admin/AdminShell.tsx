@@ -3,6 +3,7 @@ import React, { ReactNode } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAdminLang } from '../../contexts/AdminLanguageContext';
 import { useRouter } from 'next/navigation';
+import { initFirebase } from '../../services/firebase';
 
 // Controlled shell component for Admin Dashboard
 interface AdminShellProps {
@@ -15,6 +16,7 @@ export const AdminShell: React.FC<AdminShellProps> = ({ children, activeTab, onT
     const { logout, user } = useAuth();
     const { language, setLanguage, t } = useAdminLang();
     const router = useRouter();
+    const isFirebaseConnected = !!initFirebase();
 
     const menuItems = [
         { id: 'overview', label: t('dashboard'), icon: 'dashboard' },
@@ -115,6 +117,12 @@ export const AdminShell: React.FC<AdminShellProps> = ({ children, activeTab, onT
                             <span className="text-lg">{language === 'en' ? '🇬🇧' : '🇻🇳'}</span>
                             <span className="text-xs font-bold uppercase text-gray-600 dark:text-gray-300">{language}</span>
                         </button>
+
+                        {/* Connection Status */}
+                        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${isFirebaseConnected ? 'bg-green-500/5 border-green-500/20 text-green-600' : 'bg-red-500/5 border-red-500/20 text-red-600'} transition-all`}>
+                            <div className={`w-2 h-2 rounded-full ${isFirebaseConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}></div>
+                            <span className="text-[10px] font-bold uppercase tracking-wider">{isFirebaseConnected ? 'Connected' : 'Disconnected'}</span>
+                        </div>
                     </div>
                 </header>
 
