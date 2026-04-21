@@ -3,7 +3,8 @@ import React, { ReactNode } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useAdminLang } from '../../contexts/AdminLanguageContext';
 import { useRouter } from 'next/navigation';
-import { initFirebase } from '../../services/firebase';
+import { initFirebase } from '../../../services/firebase';
+import { useState, useEffect } from 'react';
 
 // Controlled shell component for Admin Dashboard
 interface AdminShellProps {
@@ -16,7 +17,11 @@ export const AdminShell: React.FC<AdminShellProps> = ({ children, activeTab, onT
     const { logout, user } = useAuth();
     const { language, setLanguage, t } = useAdminLang();
     const router = useRouter();
-    const isFirebaseConnected = !!initFirebase();
+    const [isFirebaseConnected, setIsFirebaseConnected] = useState(false);
+
+    useEffect(() => {
+        setIsFirebaseConnected(!!initFirebase());
+    }, []);
 
     const menuItems = [
         { id: 'overview', label: t('dashboard'), icon: 'dashboard' },
